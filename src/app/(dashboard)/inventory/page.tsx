@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Plus, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { SearchBar } from "@/components/ui/search-bar"
 import { requireAuth } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 import { formatCurrency } from "@/lib/utils/format"
@@ -19,34 +20,25 @@ export default async function InventoryPage({
   const { tenantId } = await requireAuth()
   const currentPage = page ? parseInt(page) : 1
 
-  const where = {
+  const searchWhere = search ? {
+    OR: [
+      { name: { contains: search, mode: "insensitive" as const } },
+      { partNumber: { contains: search, mode: "insensitive" as const } },
+      { brand: { contains: search, mode: "insensitive" as const } },
+      { category: { contains: search, mode: "insensitive" as const } },
+    ],
+  } : {}
+
+  const itemsWhere = {
     tenantId,
     isActive: true,
-    ...(low === "1" && { quantityOnHand: { lte: prisma.inventoryItem.fields.reorderPoint } }),
-    ...(search && {
-      OR: [
-        { name: { contains: search, mode: "insensitive" as const } },
-        { partNumber: { contains: search, mode: "insensitive" as const } },
-        { brand: { contains: search, mode: "insensitive" as const } },
-        { category: { contains: search, mode: "insensitive" as const } },
-      ],
-    }),
+    ...(low === "1" && { quantityOnHand: { lte: 5 } }),
+    ...searchWhere,
   }
 
   const [items, total, lowStockCount] = await Promise.all([
     prisma.inventoryItem.findMany({
-      where: {
-        tenantId,
-        isActive: true,
-        ...(search && {
-          OR: [
-            { name: { contains: search, mode: "insensitive" as const } },
-            { partNumber: { contains: search, mode: "insensitive" as const } },
-            { brand: { contains: search, mode: "insensitive" as const } },
-            { category: { contains: search, mode: "insensitive" as const } },
-          ],
-        }),
-      },
+      where: itemsWhere,
       orderBy: { name: "asc" },
       skip: (currentPage - 1) * PAGINATION_PAGE_SIZE,
       take: PAGINATION_PAGE_SIZE,
@@ -71,7 +63,7 @@ export default async function InventoryPage({
           <p className="text-muted-foreground text-sm mt-0.5">
             {total} part{total !== 1 ? "s" : ""}
             {lowStockCount > 0 && (
-              <span className="ml-2 text-orange-600 font-medium flex-inline items-center gap-1">
+              <span className="ml-2 text-orange-600 font-medium">
                 · {lowStockCount} low / out of stock
               </span>
             )}
@@ -81,6 +73,20 @@ export default async function InventoryPage({
           <Plus className="h-4 w-4 mr-2" />
           Add Part
         </Button>
+      </div>
+
+      <div className="flex items-center gap-3 mb-4">
+        <SearchBar placeholder="Search parts, SKU, brand…" initialValue={search ?? ""} />
+        {lowStockCount > 0 && (
+          <Button
+            variant={low === "1" ? "default" : "outline"}
+            size="sm"
+            render={<Link href={low === "1" ? "/inventory" : "/inventory?low=1"} />}
+          >
+            <AlertTriangle className="h-3.5 w-3.5 mr-1.5" />
+            Low stock
+          </Button>
+        )}
       </div>
 
       {items.length === 0 ? (

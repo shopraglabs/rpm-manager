@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Plus, LayoutGrid, List } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { SearchBar } from "@/components/ui/search-bar"
 import { getWorkOrders, getBoardWorkOrders } from "@/modules/work-orders/queries"
 import { formatDate } from "@/lib/utils/format"
 
@@ -215,6 +216,10 @@ export default async function WorkOrdersPage({
             New Work Order
           </Button>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <SearchBar placeholder="Search by order #, vehicle, plate…" initialValue={search ?? ""} />
       </div>
 
       {result.items.length === 0 ? (

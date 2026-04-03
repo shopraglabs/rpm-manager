@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { SearchBar } from "@/components/ui/search-bar"
 import { getInvoices } from "@/modules/invoices/queries"
 import { formatCurrency, formatDate } from "@/lib/utils/format"
 
@@ -51,6 +52,10 @@ export default async function InvoicesPage({
           <Plus className="h-4 w-4 mr-2" />
           New Invoice
         </Button>
+      </div>
+
+      <div className="mb-4">
+        <SearchBar placeholder="Search by customer, invoice #…" initialValue={search ?? ""} />
       </div>
 
       {result.items.length === 0 ? (

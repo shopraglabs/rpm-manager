@@ -73,7 +73,11 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.1",
+    "tsx": "^4.19.3",
     "vitest": "^4.1.2"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

@@ -1,0 +1,584 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// TENANT / ORGANIZATION
+// ============================================================
+model Tenant {
+  id              String           @id @default(cuid())
+  name            String
+  slug            String           @unique
+  phone           String?
+  email           String?
+  address         String?
+  city            String?
+  state           String?
+  zip             String?
+  logo            String?
+  timezone        String           @default("America/New_York")
+  taxRate         Decimal          @default(0) @db.Decimal(5, 4)
+  laborRate       Decimal          @default(0) @db.Decimal(10, 2)
+  stripeAccountId String?
+  subscription    SubscriptionTier @default(FREE)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  users          User[]
+  customers      Customer[]
+  vehicles       Vehicle[]
+  estimates      Estimate[]
+  workOrders     WorkOrder[]
+  inspections    Inspection[]
+  appointments   Appointment[]
+  inventoryItems InventoryItem[]
+  invoices       Invoice[]
+  payments       Payment[]
+
+  @@map("tenants")
+}
+
+enum SubscriptionTier {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+// ============================================================
+// USER
+// ============================================================
+model User {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  supabaseUid String   @unique
+  email       String
+  firstName   String
+  lastName    String
+  phone       String?
+  role        UserRole @default(TECHNICIAN)
+  isActive    Boolean  @default(true)
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignedWorkOrders WorkOrder[]   @relation("AssignedTechnician")
+  createdEstimates   Estimate[]    @relation("EstimateCreatedBy")
+  inspections        Inspection[]  @relation("InspectionTechnician")
+  appointments       Appointment[]
+
+  @@index([tenantId])
+  @@index([supabaseUid])
+  @@map("users")
+}
+
+enum UserRole {
+  OWNER
+  MANAGER
+  SERVICE_WRITER
+  TECHNICIAN
+}
+
+// ============================================================
+// CUSTOMER
+// ============================================================
+model Customer {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  address   String?
+  city      String?
+  state     String?
+  zip       String?
+  notes     String?  @db.Text
+  tags      String[] @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicles  Vehicle[]
+  estimates Estimate[]
+  invoices  Invoice[]
+
+  @@index([tenantId])
+  @@index([tenantId, lastName, firstName])
+  @@index([tenantId, phone])
+  @@index([tenantId, email])
+  @@map("customers")
+}
+
+// ============================================================
+// VEHICLE
+// ============================================================
+model Vehicle {
+  id           String            @id @default(cuid())
+  tenantId     String
+  tenant       Tenant            @relation(fields: [tenantId], references: [id])
+  customerId   String
+  customer     Customer          @relation(fields: [customerId], references: [id])
+  year         Int?
+  make         String
+  model        String
+  trim         String?
+  vin          String?
+  licensePlate String?
+  color        String?
+  engineSize   String?
+  transmission TransmissionType?
+  mileage      Int?
+  notes        String?           @db.Text
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  estimates    Estimate[]
+  workOrders   WorkOrder[]
+  inspections  Inspection[]
+  appointments Appointment[]
+
+  @@index([tenantId])
+  @@index([tenantId, vin])
+  @@index([tenantId, licensePlate])
+  @@index([customerId])
+  @@map("vehicles")
+}
+
+enum TransmissionType {
+  AUTOMATIC
+  MANUAL
+  CVT
+  OTHER
+}
+
+// ============================================================
+// ESTIMATE
+// ============================================================
+model Estimate {
+  id             String         @id @default(cuid())
+  tenantId       String
+  tenant         Tenant         @relation(fields: [tenantId], references: [id])
+  estimateNumber String
+  customerId     String
+  customer       Customer       @relation(fields: [customerId], references: [id])
+  vehicleId      String
+  vehicle        Vehicle        @relation(fields: [vehicleId], references: [id])
+  createdById    String
+  createdBy      User           @relation("EstimateCreatedBy", fields: [createdById], references: [id])
+  status         EstimateStatus @default(DRAFT)
+  version        Int            @default(1)
+  notes          String?        @db.Text
+  internalNotes  String?        @db.Text
+  subtotal       Decimal        @default(0) @db.Decimal(10, 2)
+  taxAmount      Decimal        @default(0) @db.Decimal(10, 2)
+  total          Decimal        @default(0) @db.Decimal(10, 2)
+  shareToken     String?        @unique
+  sentAt         DateTime?
+  approvedAt     DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  lineItems EstimateLineItem[]
+  versions  EstimateVersion[]
+  workOrder WorkOrder?
+
+  @@unique([tenantId, estimateNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([customerId])
+  @@index([vehicleId])
+  @@map("estimates")
+}
+
+enum EstimateStatus {
+  DRAFT
+  SENT
+  VIEWED
+  APPROVED
+  DECLINED
+  EXPIRED
+  CONVERTED
+}
+
+model EstimateLineItem {
+  id          String       @id @default(cuid())
+  estimateId  String
+  estimate    Estimate     @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  type        LineItemType
+  description String
+  quantity    Decimal      @default(1) @db.Decimal(10, 2)
+  unitPrice   Decimal      @default(0) @db.Decimal(10, 2)
+  total       Decimal      @default(0) @db.Decimal(10, 2)
+  laborHours  Decimal?     @db.Decimal(10, 2)
+  partNumber  String?
+  sortOrder   Int          @default(0)
+  isApproved  Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([estimateId])
+  @@map("estimate_line_items")
+}
+
+enum LineItemType {
+  LABOR
+  PART
+  SUBLET
+  FEE
+  DISCOUNT
+}
+
+model EstimateVersion {
+  id         String   @id @default(cuid())
+  estimateId String
+  estimate   Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  version    Int
+  snapshot   Json
+  createdAt  DateTime @default(now())
+
+  @@unique([estimateId, version])
+  @@map("estimate_versions")
+}
+
+// ============================================================
+// WORK ORDER
+// ============================================================
+model WorkOrder {
+  id            String          @id @default(cuid())
+  tenantId      String
+  tenant        Tenant          @relation(fields: [tenantId], references: [id])
+  orderNumber   String
+  estimateId    String?         @unique
+  estimate      Estimate?       @relation(fields: [estimateId], references: [id])
+  vehicleId     String
+  vehicle       Vehicle         @relation(fields: [vehicleId], references: [id])
+  customerId    String
+  assignedToId  String?
+  assignedTo    User?           @relation("AssignedTechnician", fields: [assignedToId], references: [id])
+  status        WorkOrderStatus @default(PENDING)
+  priority      Priority        @default(NORMAL)
+  mileageIn     Int?
+  mileageOut    Int?
+  promisedDate  DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  notes         String?         @db.Text
+  internalNotes String?         @db.Text
+  subtotal      Decimal         @default(0) @db.Decimal(10, 2)
+  taxAmount     Decimal         @default(0) @db.Decimal(10, 2)
+  total         Decimal         @default(0) @db.Decimal(10, 2)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  lineItems     WorkOrderLineItem[]
+  inspections   Inspection[]
+  invoice       Invoice?
+  statusHistory WorkOrderStatusHistory[]
+
+  @@unique([tenantId, orderNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([vehicleId])
+  @@index([customerId])
+  @@index([assignedToId])
+  @@map("work_orders")
+}
+
+enum WorkOrderStatus {
+  PENDING
+  CHECKED_IN
+  IN_PROGRESS
+  WAITING_PARTS
+  WAITING_APPROVAL
+  QUALITY_CHECK
+  COMPLETED
+  READY_FOR_PICKUP
+  DELIVERED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model WorkOrderLineItem {
+  id              String         @id @default(cuid())
+  workOrderId     String
+  workOrder       WorkOrder      @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  type            LineItemType
+  description     String
+  quantity        Decimal        @default(1) @db.Decimal(10, 2)
+  unitPrice       Decimal        @default(0) @db.Decimal(10, 2)
+  total           Decimal        @default(0) @db.Decimal(10, 2)
+  laborHours      Decimal?       @db.Decimal(10, 2)
+  partNumber      String?
+  inventoryItemId String?
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+  isCompleted     Boolean        @default(false)
+  sortOrder       Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([workOrderId])
+  @@map("work_order_line_items")
+}
+
+model WorkOrderStatusHistory {
+  id          String          @id @default(cuid())
+  workOrderId String
+  workOrder   WorkOrder       @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  fromStatus  WorkOrderStatus
+  toStatus    WorkOrderStatus
+  changedById String?
+  note        String?
+  createdAt   DateTime        @default(now())
+
+  @@index([workOrderId])
+  @@map("work_order_status_history")
+}
+
+// ============================================================
+// DIGITAL VEHICLE INSPECTION (DVI)
+// ============================================================
+model Inspection {
+  id               String           @id @default(cuid())
+  tenantId         String
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  workOrderId      String
+  workOrder        WorkOrder        @relation(fields: [workOrderId], references: [id])
+  vehicleId        String
+  vehicle          Vehicle          @relation(fields: [vehicleId], references: [id])
+  technicianId     String
+  technician       User             @relation("InspectionTechnician", fields: [technicianId], references: [id])
+  templateName     String           @default("Standard Inspection")
+  status           InspectionStatus @default(IN_PROGRESS)
+  shareToken       String?          @unique
+  sentToCustomer   Boolean          @default(false)
+  customerViewedAt DateTime?
+  completedAt      DateTime?
+  notes            String?          @db.Text
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  items InspectionItem[]
+
+  @@index([tenantId])
+  @@index([workOrderId])
+  @@map("inspections")
+}
+
+enum InspectionStatus {
+  IN_PROGRESS
+  COMPLETED
+  SENT
+  VIEWED
+}
+
+model InspectionItem {
+  id           String              @id @default(cuid())
+  inspectionId String
+  inspection   Inspection          @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  category     String
+  name         String
+  condition    InspectionCondition
+  notes        String?             @db.Text
+  sortOrder    Int                 @default(0)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  photos InspectionPhoto[]
+
+  @@index([inspectionId])
+  @@map("inspection_items")
+}
+
+enum InspectionCondition {
+  GOOD
+  FAIR
+  POOR
+  URGENT
+}
+
+model InspectionPhoto {
+  id               String         @id @default(cuid())
+  inspectionItemId String
+  inspectionItem   InspectionItem @relation(fields: [inspectionItemId], references: [id], onDelete: Cascade)
+  url              String
+  caption          String?
+  sortOrder        Int            @default(0)
+  createdAt        DateTime       @default(now())
+
+  @@index([inspectionItemId])
+  @@map("inspection_photos")
+}
+
+// ============================================================
+// APPOINTMENT / SCHEDULING
+// ============================================================
+model Appointment {
+  id            String            @id @default(cuid())
+  tenantId      String
+  tenant        Tenant            @relation(fields: [tenantId], references: [id])
+  vehicleId     String?
+  vehicle       Vehicle?          @relation(fields: [vehicleId], references: [id])
+  assignedToId  String?
+  assignedTo    User?             @relation(fields: [assignedToId], references: [id])
+  customerName  String
+  customerPhone String?
+  customerEmail String?
+  title         String
+  description   String?           @db.Text
+  status        AppointmentStatus @default(SCHEDULED)
+  startTime     DateTime
+  endTime       DateTime
+  reminderSent  Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, startTime])
+  @@index([assignedToId, startTime])
+  @@map("appointments")
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  ARRIVED
+  NO_SHOW
+  CANCELLED
+  COMPLETED
+}
+
+// ============================================================
+// PARTS / INVENTORY
+// ============================================================
+model InventoryItem {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  partNumber      String
+  name            String
+  description     String?
+  category        String?
+  brand           String?
+  cost            Decimal  @default(0) @db.Decimal(10, 2)
+  price           Decimal  @default(0) @db.Decimal(10, 2)
+  quantityOnHand  Int      @default(0)
+  reorderPoint    Int      @default(0)
+  reorderQuantity Int      @default(0)
+  location        String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  workOrderLineItems WorkOrderLineItem[]
+
+  @@unique([tenantId, partNumber])
+  @@index([tenantId])
+  @@index([tenantId, name])
+  @@map("inventory_items")
+}
+
+// ============================================================
+// INVOICE
+// ============================================================
+model Invoice {
+  id            String        @id @default(cuid())
+  tenantId      String
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+  invoiceNumber String
+  workOrderId   String?       @unique
+  workOrder     WorkOrder?    @relation(fields: [workOrderId], references: [id])
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  status        InvoiceStatus @default(DRAFT)
+  shareToken    String?       @unique
+  subtotal      Decimal       @default(0) @db.Decimal(10, 2)
+  taxAmount     Decimal       @default(0) @db.Decimal(10, 2)
+  total         Decimal       @default(0) @db.Decimal(10, 2)
+  amountPaid    Decimal       @default(0) @db.Decimal(10, 2)
+  amountDue     Decimal       @default(0) @db.Decimal(10, 2)
+  dueDate       DateTime?
+  paidAt        DateTime?
+  notes         String?       @db.Text
+  sentAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  lineItems InvoiceLineItem[]
+  payments  Payment[]
+
+  @@unique([tenantId, invoiceNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([customerId])
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  VOID
+}
+
+model InvoiceLineItem {
+  id          String       @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  type        LineItemType
+  description String
+  quantity    Decimal      @default(1) @db.Decimal(10, 2)
+  unitPrice   Decimal      @default(0) @db.Decimal(10, 2)
+  total       Decimal      @default(0) @db.Decimal(10, 2)
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([invoiceId])
+  @@map("invoice_line_items")
+}
+
+// ============================================================
+// PAYMENT
+// ============================================================
+model Payment {
+  id              String        @id @default(cuid())
+  tenantId        String
+  tenant          Tenant        @relation(fields: [tenantId], references: [id])
+  invoiceId       String
+  invoice         Invoice       @relation(fields: [invoiceId], references: [id])
+  amount          Decimal       @db.Decimal(10, 2)
+  method          PaymentMethod
+  stripePaymentId String?
+  reference       String?
+  notes           String?
+  createdAt       DateTime      @default(now())
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  CREDIT_CARD
+  DEBIT_CARD
+  ACH
+  OTHER
+}

@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Plus, Pencil, Car } from "lucide-react"
+import { ChevronLeft, Plus, Pencil, Car, FileText, Wrench, Receipt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getCustomer } from "@/modules/customers/queries"
-import { formatPhone, formatDate } from "@/lib/utils/format"
+import { formatPhone, formatDate, formatCurrency } from "@/lib/utils/format"
 
 export const metadata: Metadata = { title: "Customer" }
 
@@ -154,6 +154,104 @@ export default async function CustomerDetailPage({
           </div>
         </div>
       </div>
+
+      {/* Service History */}
+      {(customer.estimates.length > 0 || customer.workOrders.length > 0 || customer.invoices.length > 0) && (
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Estimates */}
+          {customer.estimates.length > 0 && (
+            <div className="rounded-xl border bg-card p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-medium">Estimates</h2>
+              </div>
+              <div className="space-y-2">
+                {customer.estimates.map((est) => (
+                  <Link
+                    key={est.id}
+                    href={`/estimates/${est.id}`}
+                    className="flex items-center justify-between py-1.5 hover:text-primary transition-colors"
+                  >
+                    <div>
+                      <span className="text-xs font-mono">{est.estimateNumber}</span>
+                      <p className="text-xs text-muted-foreground">
+                        {est.vehicle.year} {est.vehicle.make} {est.vehicle.model} · {formatDate(est.createdAt)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium tabular-nums">{formatCurrency(est.total.toNumber())}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{est.status.toLowerCase()}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Work Orders */}
+          {customer.workOrders.length > 0 && (
+            <div className="rounded-xl border bg-card p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Wrench className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-medium">Work Orders</h2>
+              </div>
+              <div className="space-y-2">
+                {customer.workOrders.map((wo) => (
+                  <Link
+                    key={wo.id}
+                    href={`/work-orders/${wo.id}`}
+                    className="flex items-center justify-between py-1.5 hover:text-primary transition-colors"
+                  >
+                    <div>
+                      <span className="text-xs font-mono">{wo.orderNumber}</span>
+                      <p className="text-xs text-muted-foreground">
+                        {wo.vehicle.year} {wo.vehicle.make} {wo.vehicle.model} · {formatDate(wo.createdAt)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium tabular-nums">{formatCurrency(wo.total.toNumber())}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{wo.status.toLowerCase().replace("_", " ")}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Invoices */}
+          {customer.invoices.length > 0 && (
+            <div className="rounded-xl border bg-card p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Receipt className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-medium">Invoices</h2>
+              </div>
+              <div className="space-y-2">
+                {customer.invoices.map((inv) => (
+                  <Link
+                    key={inv.id}
+                    href={`/invoices/${inv.id}`}
+                    className="flex items-center justify-between py-1.5 hover:text-primary transition-colors"
+                  >
+                    <div>
+                      <span className="text-xs font-mono">{inv.invoiceNumber}</span>
+                      <p className="text-xs text-muted-foreground">{formatDate(inv.createdAt)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium tabular-nums">{formatCurrency(inv.total.toNumber())}</p>
+                      {inv.amountDue.toNumber() > 0 && inv.status !== "PAID" && (
+                        <p className="text-xs text-orange-600">Due: {formatCurrency(inv.amountDue.toNumber())}</p>
+                      )}
+                      {inv.status === "PAID" && (
+                        <p className="text-xs text-green-600">Paid</p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

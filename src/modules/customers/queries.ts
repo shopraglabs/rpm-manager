@@ -53,6 +53,42 @@ export async function getCustomer(id: string) {
       vehicles: {
         orderBy: { createdAt: "desc" },
       },
+      estimates: {
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        select: {
+          id: true,
+          estimateNumber: true,
+          status: true,
+          total: true,
+          createdAt: true,
+          vehicle: { select: { year: true, make: true, model: true } },
+        },
+      },
+      workOrders: {
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          total: true,
+          createdAt: true,
+          vehicle: { select: { year: true, make: true, model: true } },
+        },
+      },
+      invoices: {
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        select: {
+          id: true,
+          invoiceNumber: true,
+          status: true,
+          total: true,
+          amountDue: true,
+          createdAt: true,
+        },
+      },
     },
   })
 }

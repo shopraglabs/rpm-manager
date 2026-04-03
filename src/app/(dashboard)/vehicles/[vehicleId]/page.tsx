@@ -1,10 +1,11 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Pencil, Plus } from "lucide-react"
+import { ChevronLeft, Pencil, Plus, FileText, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { getVehicle } from "@/modules/vehicles/queries"
-import { formatDate } from "@/lib/utils/format"
+import { formatDate, formatCurrency } from "@/lib/utils/format"
 
 export const metadata: Metadata = { title: "Vehicle" }
 
@@ -116,6 +117,68 @@ export default async function VehicleDetailPage({
           </div>
         )}
       </div>
+
+      {/* Service history */}
+      {(vehicle.workOrders.length > 0 || vehicle.estimates.length > 0) && (
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+          {vehicle.workOrders.length > 0 && (
+            <div className="rounded-xl border bg-card p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Wrench className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-medium">Work Orders</h2>
+              </div>
+              <div className="space-y-2 text-sm">
+                {vehicle.workOrders.map((wo) => (
+                  <Link
+                    key={wo.id}
+                    href={`/work-orders/${wo.id}`}
+                    className="flex items-center justify-between py-1.5 hover:text-primary"
+                  >
+                    <div>
+                      <span className="font-mono text-xs">{wo.orderNumber}</span>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(wo.createdAt)}
+                        {wo.mileageIn != null && ` · ${wo.mileageIn.toLocaleString()} mi`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium tabular-nums">{formatCurrency(wo.total.toNumber())}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{wo.status.toLowerCase().replace(/_/g, " ")}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {vehicle.estimates.length > 0 && (
+            <div className="rounded-xl border bg-card p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-medium">Estimates</h2>
+              </div>
+              <div className="space-y-2 text-sm">
+                {vehicle.estimates.map((est) => (
+                  <Link
+                    key={est.id}
+                    href={`/estimates/${est.id}`}
+                    className="flex items-center justify-between py-1.5 hover:text-primary"
+                  >
+                    <div>
+                      <span className="font-mono text-xs">{est.estimateNumber}</span>
+                      <p className="text-xs text-muted-foreground">{formatDate(est.createdAt)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium tabular-nums">{formatCurrency(est.total.toNumber())}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{est.status.toLowerCase()}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

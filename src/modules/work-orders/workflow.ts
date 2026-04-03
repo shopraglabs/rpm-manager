@@ -1,4 +1,4 @@
-import type { WorkOrderStatus } from "@/generated/prisma"
+import type { WorkOrderStatus } from "@/generated/prisma/enums"
 
 /**
  * Valid status transitions for work orders.

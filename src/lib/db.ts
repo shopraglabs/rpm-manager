@@ -1,17 +1,16 @@
-import { PrismaClient } from "@/generated/prisma"
+import { PrismaClient } from "@/generated/prisma/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+
+function createPrismaClient() {
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+  return new PrismaClient({ adapter })
+}
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-const basePrisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
-        : ["error"],
-  })
+const basePrisma = globalForPrisma.prisma ?? createPrismaClient()
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = basePrisma
 
@@ -31,14 +30,6 @@ export function createTenantPrisma(tenantId: string) {
         async findFirst({ args, query }: { args: Record<string, unknown>; query: (args: Record<string, unknown>) => unknown }) {
           args.where = { ...(args.where as Record<string, unknown>), tenantId }
           return query(args)
-        },
-        async findUnique({ args, query }: { args: Record<string, unknown>; query: (args: Record<string, unknown>) => unknown }) {
-          // For findUnique we use findFirst + tenantId since unique queries can't have extra where
-          const newArgs = {
-            ...args,
-            where: { ...(args.where as Record<string, unknown>), tenantId },
-          }
-          return query(newArgs)
         },
         async create({ args, query }: { args: Record<string, unknown>; query: (args: Record<string, unknown>) => unknown }) {
           args.data = { ...(args.data as Record<string, unknown>), tenantId }
@@ -61,5 +52,5 @@ export function createTenantPrisma(tenantId: string) {
   })
 }
 
-// Use this for operations that don't need tenant scoping (e.g., auth setup, admin tasks)
+// Use this for operations that don't need tenant scoping (e.g., auth setup, admin)
 export const prisma = basePrisma

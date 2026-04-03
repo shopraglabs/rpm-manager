@@ -4,7 +4,8 @@ import { useActionState } from "react"
 import { useFormStatus } from "react-dom"
 import { Button } from "@/components/ui/button"
 
-type FormAction = (formData: FormData) => Promise<{ error: string } | void> | void
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FormAction = (formData: FormData) => Promise<{ error?: string } | void | any> | void
 
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus()

@@ -82,6 +82,26 @@ export async function getWorkOrder(id: string) {
   })
 }
 
+// Returns all active (non-delivered, non-cancelled) work orders for board view
+export async function getBoardWorkOrders() {
+  const { tenantId } = await requireAuth()
+
+  return prisma.workOrder.findMany({
+    where: {
+      tenantId,
+      status: { notIn: ["DELIVERED", "CANCELLED"] },
+    },
+    orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+    include: {
+      vehicle: {
+        select: { year: true, make: true, model: true, licensePlate: true },
+      },
+      customer: { select: { firstName: true, lastName: true } },
+      assignedTo: { select: { firstName: true, lastName: true } },
+    },
+  })
+}
+
 export async function getTechnicians(tenantId: string) {
   return prisma.user.findMany({
     where: {

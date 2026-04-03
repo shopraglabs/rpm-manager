@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Plus, LayoutGrid, List } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { getWorkOrders } from "@/modules/work-orders/queries"
+import { getWorkOrders, getBoardWorkOrders } from "@/modules/work-orders/queries"
 import { formatDate } from "@/lib/utils/format"
 
 export const metadata: Metadata = { title: "Work Orders" }
@@ -27,9 +27,9 @@ const STATUS_LABELS: Record<string, string> = {
   IN_PROGRESS: "In Progress",
   WAITING_PARTS: "Waiting Parts",
   WAITING_APPROVAL: "Waiting Approval",
-  QUALITY_CHECK: "Quality Check",
+  QUALITY_CHECK: "QC",
   COMPLETED: "Completed",
-  READY_FOR_PICKUP: "Ready for Pickup",
+  READY_FOR_PICKUP: "Ready",
   DELIVERED: "Delivered",
   CANCELLED: "Cancelled",
 }
@@ -41,12 +41,151 @@ const PRIORITY_COLORS: Record<string, string> = {
   URGENT: "text-red-600 font-bold",
 }
 
+// The columns shown in board view (active statuses only)
+const BOARD_COLUMNS = [
+  "PENDING",
+  "CHECKED_IN",
+  "IN_PROGRESS",
+  "WAITING_PARTS",
+  "WAITING_APPROVAL",
+  "QUALITY_CHECK",
+  "COMPLETED",
+  "READY_FOR_PICKUP",
+] as const
+
+const BOARD_COLUMN_LABELS: Record<string, string> = {
+  PENDING: "Pending",
+  CHECKED_IN: "Checked In",
+  IN_PROGRESS: "In Progress",
+  WAITING_PARTS: "Waiting Parts",
+  WAITING_APPROVAL: "Waiting Approval",
+  QUALITY_CHECK: "Quality Check",
+  COMPLETED: "Completed",
+  READY_FOR_PICKUP: "Ready for Pickup",
+}
+
 export default async function WorkOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string; status?: string }>
+  searchParams: Promise<{ page?: string; search?: string; status?: string; view?: string }>
 }) {
-  const { page, search, status } = await searchParams
+  const { page, search, status, view } = await searchParams
+  const isBoard = view === "board"
+
+  if (isBoard) {
+    const allWorkOrders = await getBoardWorkOrders()
+
+    const byStatus = BOARD_COLUMNS.reduce<Record<string, typeof allWorkOrders>>(
+      (acc, col) => {
+        acc[col] = allWorkOrders.filter((wo) => wo.status === col)
+        return acc
+      },
+      {}
+    )
+
+    return (
+      <div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Work Orders</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              {allWorkOrders.length} active
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" render={<Link href="/work-orders" />}>
+              <List className="h-4 w-4 mr-2" />
+              List
+            </Button>
+            <Button variant="outline" size="sm" render={<Link href="/work-orders?view=board" />} className="bg-muted">
+              <LayoutGrid className="h-4 w-4 mr-2" />
+              Board
+            </Button>
+            <Button render={<Link href="/work-orders/new" />}>
+              <Plus className="h-4 w-4 mr-2" />
+              New
+            </Button>
+          </div>
+        </div>
+
+        {/* Kanban board — horizontal scroll */}
+        <div className="overflow-x-auto pb-4">
+          <div className="flex gap-3 min-w-max">
+            {BOARD_COLUMNS.map((col) => {
+              const cards = byStatus[col] ?? []
+              return (
+                <div key={col} className="w-56 shrink-0">
+                  {/* Column header */}
+                  <div className="flex items-center justify-between mb-2 px-1">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {BOARD_COLUMN_LABELS[col]}
+                    </span>
+                    {cards.length > 0 && (
+                      <span className="text-xs text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 tabular-nums">
+                        {cards.length}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Cards */}
+                  <div className="space-y-2">
+                    {cards.length === 0 && (
+                      <div className="rounded-xl border border-dashed bg-card/50 p-4 text-center">
+                        <p className="text-xs text-muted-foreground">Empty</p>
+                      </div>
+                    )}
+                    {cards.map((wo) => {
+                      const vehicleLabel = [wo.vehicle.year, wo.vehicle.make, wo.vehicle.model]
+                        .filter(Boolean)
+                        .join(" ")
+
+                      return (
+                        <Link
+                          key={wo.id}
+                          href={`/work-orders/${wo.id}`}
+                          className="block rounded-xl border bg-card p-3 hover:shadow-sm hover:border-primary/30 transition-all group"
+                        >
+                          <div className="flex items-start justify-between gap-1 mb-1.5">
+                            <span className="font-mono text-xs text-muted-foreground group-hover:text-primary">
+                              {wo.orderNumber}
+                            </span>
+                            {wo.priority !== "NORMAL" && (
+                              <span className={`text-xs ${PRIORITY_COLORS[wo.priority]}`}>
+                                {wo.priority}
+                              </span>
+                            )}
+                          </div>
+                          <p className="font-medium text-sm leading-tight mb-0.5">
+                            {wo.customer.firstName} {wo.customer.lastName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {vehicleLabel || "Unknown vehicle"}
+                          </p>
+                          {wo.vehicle.licensePlate && (
+                            <p className="text-xs text-muted-foreground/70 font-mono">
+                              {wo.vehicle.licensePlate}
+                            </p>
+                          )}
+                          {wo.assignedTo && (
+                            <p className="text-xs text-muted-foreground mt-1.5 pt-1.5 border-t">
+                              {wo.assignedTo.firstName} {wo.assignedTo.lastName}
+                            </p>
+                          )}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Table view ─────────────────────────────────────────────
   const result = await getWorkOrders({
     page: page ? parseInt(page) : 1,
     search: search ?? undefined,
@@ -62,10 +201,20 @@ export default async function WorkOrdersPage({
             {result.total} work order{result.total !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button render={<Link href="/work-orders/new" />}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Work Order
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" render={<Link href="/work-orders" />} className="bg-muted">
+            <List className="h-4 w-4 mr-2" />
+            List
+          </Button>
+          <Button variant="outline" size="sm" render={<Link href="/work-orders?view=board" />}>
+            <LayoutGrid className="h-4 w-4 mr-2" />
+            Board
+          </Button>
+          <Button render={<Link href="/work-orders/new" />}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Work Order
+          </Button>
+        </div>
       </div>
 
       {result.items.length === 0 ? (

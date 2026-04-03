@@ -5,7 +5,7 @@ import { createServerClient } from "@supabase/ssr"
 const PUBLIC_ROUTES = ["/login", "/signup", "/forgot-password", "/reset-password"]
 const PUBLIC_PREFIXES = ["/customer-portal/", "/api/webhooks/"]
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Allow public routes and API webhooks without auth

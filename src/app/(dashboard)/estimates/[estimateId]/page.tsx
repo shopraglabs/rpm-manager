@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Pencil, Send } from "lucide-react"
+import { ChevronLeft, Pencil, Send, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getEstimate } from "@/modules/estimates/queries"
@@ -49,6 +49,7 @@ export default async function EstimateDetailPage({
 
   const canEdit = !["CONVERTED"].includes(estimate.status)
   const canSend = ["DRAFT", "DECLINED"].includes(estimate.status)
+  const canConvert = estimate.status === "APPROVED" && !estimate.workOrder
 
   const sendWithId = sendEstimate.bind(null, estimateId)
 
@@ -86,6 +87,12 @@ export default async function EstimateDetailPage({
                 Send to Customer
               </Button>
             </form>
+          )}
+          {canConvert && (
+            <Button variant="outline" render={<Link href={`/work-orders/new?estimateId=${estimateId}&customerId=${estimate.customerId}&vehicleId=${estimate.vehicleId}`} />}>
+              <Wrench className="h-4 w-4 mr-2" />
+              Convert to Work Order
+            </Button>
           )}
           {canEdit && (
             <Button render={<Link href={`/estimates/${estimateId}/edit`} />}>

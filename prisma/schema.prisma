@@ -68,10 +68,11 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  assignedWorkOrders WorkOrder[]   @relation("AssignedTechnician")
-  createdEstimates   Estimate[]    @relation("EstimateCreatedBy")
-  inspections        Inspection[]  @relation("InspectionTechnician")
+  assignedWorkOrders WorkOrder[]              @relation("AssignedTechnician")
+  createdEstimates   Estimate[]               @relation("EstimateCreatedBy")
+  inspections        Inspection[]             @relation("InspectionTechnician")
   appointments       Appointment[]
+  statusChanges      WorkOrderStatusHistory[]
 
   @@index([tenantId])
   @@index([supabaseUid])
@@ -105,9 +106,10 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  vehicles  Vehicle[]
-  estimates Estimate[]
-  invoices  Invoice[]
+  vehicles    Vehicle[]
+  estimates   Estimate[]
+  workOrders  WorkOrder[]
+  invoices    Invoice[]
 
   @@index([tenantId])
   @@index([tenantId, lastName, firstName])
@@ -261,6 +263,7 @@ model WorkOrder {
   vehicleId     String
   vehicle       Vehicle         @relation(fields: [vehicleId], references: [id])
   customerId    String
+  customer      Customer        @relation(fields: [customerId], references: [id])
   assignedToId  String?
   assignedTo    User?           @relation("AssignedTechnician", fields: [assignedToId], references: [id])
   status        WorkOrderStatus @default(PENDING)
@@ -341,6 +344,7 @@ model WorkOrderStatusHistory {
   fromStatus  WorkOrderStatus
   toStatus    WorkOrderStatus
   changedById String?
+  changedBy   User?           @relation(fields: [changedById], references: [id])
   note        String?
   createdAt   DateTime        @default(now())
 

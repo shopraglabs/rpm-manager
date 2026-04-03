@@ -253,7 +253,7 @@ export default async function InvoiceDetailPage({
             <div className="rounded-xl border bg-card p-5 text-sm">
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Customer link</p>
               <code className="block font-mono text-xs bg-muted px-3 py-2 rounded break-all">
-                {`/invoice/${invoice.shareToken}`}
+                {`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/customer-portal/invoices/${invoice.shareToken}`}
               </code>
             </div>
           )}

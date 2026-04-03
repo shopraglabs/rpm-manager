@@ -1,11 +1,13 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Pencil, FileText } from "lucide-react"
+import { ChevronLeft, Pencil, FileText, ClipboardList } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { StatusTransition, STATUS_LABELS } from "@/components/work-orders/status-transition"
 import { getWorkOrder } from "@/modules/work-orders/queries"
+import { getWorkOrderInspection } from "@/modules/inspections/queries"
+import { createInspection } from "@/modules/inspections/actions"
 import { canGenerateInvoice } from "@/modules/work-orders/workflow"
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils/format"
 
@@ -38,11 +40,15 @@ export default async function WorkOrderDetailPage({
   params: Promise<{ workOrderId: string }>
 }) {
   const { workOrderId } = await params
-  const wo = await getWorkOrder(workOrderId)
+  const [wo, inspection] = await Promise.all([
+    getWorkOrder(workOrderId),
+    getWorkOrderInspection(workOrderId),
+  ])
   if (!wo) notFound()
 
   const canEdit = !["DELIVERED", "CANCELLED"].includes(wo.status)
   const canInvoice = canGenerateInvoice(wo.status) && !wo.invoice
+  const createInspectionWithId = createInspection.bind(null, workOrderId)
 
   return (
     <div className="max-w-4xl">
@@ -223,6 +229,36 @@ export default async function WorkOrderDetailPage({
         <div className="space-y-6">
           {/* Status transition */}
           <StatusTransition workOrderId={workOrderId} currentStatus={wo.status} />
+
+          {/* Inspection */}
+          <div className="rounded-xl border bg-card p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <ClipboardList className="h-4 w-4 text-muted-foreground" />
+              <h3 className="font-medium text-sm">Inspection</h3>
+            </div>
+            {inspection ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{inspection._count.items} items</span>
+                  <Badge variant="outline" className="text-xs">
+                    {inspection.status === "IN_PROGRESS" ? "In Progress"
+                      : inspection.status === "COMPLETED" ? "Completed"
+                      : inspection.status === "SENT" ? "Sent"
+                      : "Viewed"}
+                  </Badge>
+                </div>
+                <Button variant="outline" size="sm" className="w-full" render={<Link href={`/inspections/${inspection.id}`} />}>
+                  View Inspection
+                </Button>
+              </div>
+            ) : (
+              <form action={async () => { await createInspectionWithId() }}>
+                <Button type="submit" variant="outline" size="sm" className="w-full">
+                  Start Inspection
+                </Button>
+              </form>
+            )}
+          </div>
 
           {/* Status history */}
           <div className="rounded-xl border bg-card p-5">

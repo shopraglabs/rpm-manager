@@ -7,12 +7,22 @@ import { requireAuth } from "@/lib/auth/session"
 import { requirePermission } from "@/lib/auth/permissions"
 import { customerSchema, normalizeCustomerInput } from "./schemas"
 
+function parseTagsFromFormData(formData: FormData): string[] {
+  const raw = formData.get("tags")
+  if (!raw || typeof raw !== "string") return []
+  return raw
+    .split(",")
+    .map((t) => t.trim().toLowerCase())
+    .filter((t) => t.length > 0 && t.length <= 30)
+    .slice(0, 10)
+}
+
 export async function createCustomer(formData: FormData) {
   const { tenantId, role } = await requireAuth()
   requirePermission(role, "customers:create")
 
   const raw = Object.fromEntries(formData)
-  const parsed = customerSchema.safeParse({ ...raw, tags: [] })
+  const parsed = customerSchema.safeParse({ ...raw, tags: parseTagsFromFormData(formData) })
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" }
   }
@@ -33,7 +43,7 @@ export async function updateCustomer(id: string, formData: FormData) {
   requirePermission(role, "customers:update")
 
   const raw = Object.fromEntries(formData)
-  const parsed = customerSchema.safeParse({ ...raw, tags: [] })
+  const parsed = customerSchema.safeParse({ ...raw, tags: parseTagsFromFormData(formData) })
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" }
   }

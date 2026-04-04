@@ -34,6 +34,7 @@ type DefaultValues = {
   state?: string | null
   zip?: string | null
   notes?: string | null
+  tags?: string[]
 }
 
 type FormAction = (formData: FormData) => Promise<{ error: string } | void> | void
@@ -163,6 +164,18 @@ export function CustomerForm({
           placeholder="Any special notes about this customer…"
           rows={3}
         />
+      </div>
+
+      {/* Tags */}
+      <div className="space-y-2">
+        <Label htmlFor="tags">Tags</Label>
+        <Input
+          id="tags"
+          name="tags"
+          defaultValue={(defaultValues?.tags ?? []).join(", ")}
+          placeholder="fleet, commercial, VIP (comma-separated)"
+        />
+        <p className="text-xs text-muted-foreground">Separate multiple tags with commas</p>
       </div>
 
       {/* Actions */}

@@ -172,9 +172,13 @@ export async function sendEstimate(id: string) {
 
   const shareToken = existing.shareToken ?? generateShareToken()
 
+  const sentAt = new Date()
+  const expiresAt = new Date(sentAt)
+  expiresAt.setDate(expiresAt.getDate() + 30)
+
   await prisma.estimate.update({
     where: { id },
-    data: { status: "SENT", sentAt: new Date(), shareToken },
+    data: { status: "SENT", sentAt, shareToken, expiresAt },
   })
 
   // Send email if customer has an email address

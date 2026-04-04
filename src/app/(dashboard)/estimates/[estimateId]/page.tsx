@@ -154,6 +154,22 @@ export default async function EstimateDetailPage({
             <p className="text-muted-foreground">Created</p>
             <p className="font-medium mt-0.5">{formatDate(estimate.createdAt)}</p>
           </div>
+          {estimate.expiresAt && (
+            <div>
+              <p className="text-muted-foreground">Valid until</p>
+              <p
+                className={`font-medium mt-0.5 ${
+                  estimate.status === "EXPIRED"
+                    ? "text-muted-foreground line-through"
+                    : new Date(estimate.expiresAt) < new Date()
+                      ? "text-destructive"
+                      : ""
+                }`}
+              >
+                {formatDate(estimate.expiresAt)}
+              </p>
+            </div>
+          )}
           <div>
             <p className="text-muted-foreground">Created by</p>
             <p className="font-medium mt-0.5">

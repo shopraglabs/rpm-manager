@@ -108,6 +108,13 @@ export default async function CustomerDetailPage({
             <Pencil className="h-4 w-4 mr-2" />
             Edit
           </Button>
+          <Button
+            variant="outline"
+            render={<Link href={`/work-orders/new?customerId=${customer.id}`} />}
+          >
+            <Wrench className="h-4 w-4 mr-2" />
+            New Work Order
+          </Button>
           <Button render={<Link href={`/estimates/new?customerId=${customer.id}`} />}>
             <Plus className="h-4 w-4 mr-2" />
             New Estimate

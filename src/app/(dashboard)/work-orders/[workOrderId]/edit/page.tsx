@@ -17,6 +17,7 @@ import { LineItemEditor } from "@/components/estimates/line-item-editor"
 import { EstimateFormShell } from "@/components/estimates/estimate-form-shell"
 import { getWorkOrder, getTechnicians } from "@/modules/work-orders/queries"
 import { updateWorkOrder, deleteWorkOrder } from "@/modules/work-orders/actions"
+import { getCannedJobs } from "@/modules/canned-jobs/queries"
 import { requireAuth } from "@/lib/auth/session"
 
 export const metadata: Metadata = { title: "Edit Work Order" }
@@ -28,7 +29,11 @@ export default async function EditWorkOrderPage({
 }) {
   const { workOrderId } = await params
   const { tenantId } = await requireAuth()
-  const [wo, technicians] = await Promise.all([getWorkOrder(workOrderId), getTechnicians(tenantId)])
+  const [wo, technicians, cannedJobs] = await Promise.all([
+    getWorkOrder(workOrderId),
+    getTechnicians(tenantId),
+    getCannedJobs({ activeOnly: true }),
+  ])
 
   if (!wo) notFound()
   if (["DELIVERED", "CANCELLED"].includes(wo.status)) {
@@ -151,6 +156,7 @@ export default async function EditWorkOrderPage({
         <div className="rounded-xl border bg-card p-6">
           <h2 className="font-medium mb-4">Labor &amp; Parts</h2>
           <LineItemEditor
+            cannedJobs={cannedJobs}
             defaultItems={wo.lineItems.map((item) => ({
               type: item.type,
               description: item.description,

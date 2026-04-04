@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { LineItemEditor } from "@/components/estimates/line-item-editor"
 import { EstimateFormShell } from "@/components/estimates/estimate-form-shell"
 import { createInvoice, createInvoiceFromWorkOrder } from "@/modules/invoices/actions"
+import { getCannedJobs } from "@/modules/canned-jobs/queries"
 import { requireAuth } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 
@@ -70,11 +71,14 @@ export default async function NewInvoicePage({
   }
 
   // Manual invoice creation
-  const customers = await prisma.customer.findMany({
-    where: { tenantId },
-    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-    select: { id: true, firstName: true, lastName: true },
-  })
+  const [customers, cannedJobs] = await Promise.all([
+    prisma.customer.findMany({
+      where: { tenantId },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+      select: { id: true, firstName: true, lastName: true },
+    }),
+    getCannedJobs({ activeOnly: true }),
+  ])
 
   return (
     <div className="max-w-4xl">
@@ -146,7 +150,7 @@ export default async function NewInvoicePage({
         {/* Line Items */}
         <div className="rounded-xl border bg-card p-6">
           <h2 className="font-medium mb-4">Line Items</h2>
-          <LineItemEditor />
+          <LineItemEditor cannedJobs={cannedJobs} />
         </div>
 
         {/* Notes */}

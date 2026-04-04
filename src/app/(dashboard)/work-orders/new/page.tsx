@@ -17,6 +17,7 @@ import { LineItemEditor } from "@/components/estimates/line-item-editor"
 import { EstimateFormShell } from "@/components/estimates/estimate-form-shell"
 import { createWorkOrder } from "@/modules/work-orders/actions"
 import { getTechnicians } from "@/modules/work-orders/queries"
+import { getCannedJobs } from "@/modules/canned-jobs/queries"
 import { requireAuth } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 
@@ -34,7 +35,7 @@ export default async function NewWorkOrderPage({
   } = await searchParams
   const { tenantId } = await requireAuth()
 
-  const [customers, technicians] = await Promise.all([
+  const [customers, technicians, cannedJobs] = await Promise.all([
     prisma.customer.findMany({
       where: { tenantId },
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
@@ -49,6 +50,7 @@ export default async function NewWorkOrderPage({
       },
     }),
     getTechnicians(tenantId),
+    getCannedJobs({ activeOnly: true }),
   ])
 
   const customerVehicles = Object.fromEntries(customers.map((c) => [c.id, c.vehicles]))
@@ -139,7 +141,7 @@ export default async function NewWorkOrderPage({
         {/* Line Items */}
         <div className="rounded-xl border bg-card p-6">
           <h2 className="font-medium mb-4">Labor &amp; Parts</h2>
-          <LineItemEditor />
+          <LineItemEditor cannedJobs={cannedJobs} />
         </div>
 
         {/* Notes */}

@@ -9,6 +9,7 @@ import { LineItemEditor } from "@/components/estimates/line-item-editor"
 import { EstimateFormShell } from "@/components/estimates/estimate-form-shell"
 import { getEstimate } from "@/modules/estimates/queries"
 import { updateEstimate, deleteEstimate } from "@/modules/estimates/actions"
+import { getCannedJobs } from "@/modules/canned-jobs/queries"
 
 export const metadata: Metadata = { title: "Edit Estimate" }
 
@@ -18,7 +19,10 @@ export default async function EditEstimatePage({
   params: Promise<{ estimateId: string }>
 }) {
   const { estimateId } = await params
-  const estimate = await getEstimate(estimateId)
+  const [estimate, cannedJobs] = await Promise.all([
+    getEstimate(estimateId),
+    getCannedJobs({ activeOnly: true }),
+  ])
   if (!estimate) notFound()
   if (estimate.status === "CONVERTED") redirect(`/estimates/${estimateId}`)
 
@@ -80,6 +84,7 @@ export default async function EditEstimatePage({
         <div className="rounded-xl border bg-card p-6">
           <h2 className="font-medium mb-4">Line Items</h2>
           <LineItemEditor
+            cannedJobs={cannedJobs}
             defaultItems={estimate.lineItems.map((item) => ({
               type: item.type,
               description: item.description,

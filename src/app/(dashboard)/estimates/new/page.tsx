@@ -8,6 +8,7 @@ import { CustomerVehicleSelector } from "@/components/estimates/customer-vehicle
 import { LineItemEditor } from "@/components/estimates/line-item-editor"
 import { EstimateFormShell } from "@/components/estimates/estimate-form-shell"
 import { createEstimate } from "@/modules/estimates/actions"
+import { getCannedJobs } from "@/modules/canned-jobs/queries"
 import { requireAuth } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 
@@ -21,20 +22,22 @@ export default async function NewEstimatePage({
   const { customerId: defaultCustomerId, vehicleId: defaultVehicleId } = await searchParams
   const { tenantId } = await requireAuth()
 
-  // Load all customers with their vehicles for the selector
-  const customers = await prisma.customer.findMany({
-    where: { tenantId },
-    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      vehicles: {
-        select: { id: true, year: true, make: true, model: true, trim: true, licensePlate: true },
-        orderBy: { createdAt: "desc" },
+  const [customers, cannedJobs] = await Promise.all([
+    prisma.customer.findMany({
+      where: { tenantId },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        vehicles: {
+          select: { id: true, year: true, make: true, model: true, trim: true, licensePlate: true },
+          orderBy: { createdAt: "desc" },
+        },
       },
-    },
-  })
+    }),
+    getCannedJobs({ activeOnly: true }),
+  ])
 
   const customerVehicles = Object.fromEntries(customers.map((c) => [c.id, c.vehicles]))
 
@@ -74,7 +77,7 @@ export default async function NewEstimatePage({
         {/* Line Items */}
         <div className="rounded-xl border bg-card p-6">
           <h2 className="font-medium mb-4">Line Items</h2>
-          <LineItemEditor />
+          <LineItemEditor cannedJobs={cannedJobs} />
         </div>
 
         {/* Notes */}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Plus, Trash2, GripVertical } from "lucide-react"
+import { Plus, Trash2, GripVertical, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -12,6 +12,15 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { formatCurrency } from "@/lib/utils/format"
+
+type CannedJobOption = {
+  id: string
+  name: string
+  type: string
+  description: string | null
+  quantity: { toNumber(): number }
+  unitPrice: { toNumber(): number }
+}
 
 type LineItemType = "LABOR" | "PART" | "SUBLET" | "FEE" | "DISCOUNT"
 
@@ -65,9 +74,11 @@ type Props = {
     sortOrder?: number
   }>
   taxRate?: number
+  cannedJobs?: CannedJobOption[]
 }
 
-export function LineItemEditor({ defaultItems, taxRate = 0 }: Props) {
+export function LineItemEditor({ defaultItems, taxRate = 0, cannedJobs = [] }: Props) {
+  const [showCannedMenu, setShowCannedMenu] = useState(false)
   const [items, setItems] = useState<LineItem[]>(() => {
     if (defaultItems && defaultItems.length > 0) {
       return defaultItems.map((item, idx) => ({
@@ -94,6 +105,23 @@ export function LineItemEditor({ defaultItems, taxRate = 0 }: Props) {
 
   const updateItem = useCallback((id: string, field: keyof LineItem, value: string) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)))
+  }, [])
+
+  const addFromCannedJob = useCallback((job: CannedJobOption) => {
+    setItems((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        type: job.type as LineItemType,
+        description: job.name,
+        quantity: String(job.quantity.toNumber()),
+        unitPrice: String(job.unitPrice.toNumber()),
+        laborHours: "",
+        partNumber: "",
+        sortOrder: prev.length,
+      },
+    ])
+    setShowCannedMenu(false)
   }, [])
 
   const subtotal = items.reduce((sum, item) => sum + lineTotal(item), 0)
@@ -248,16 +276,53 @@ export function LineItemEditor({ defaultItems, taxRate = 0 }: Props) {
       </div>
 
       {/* Add line item */}
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={addItem}
-        className="w-full border-dashed"
-      >
-        <Plus className="h-3.5 w-3.5 mr-1.5" />
-        Add line item
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addItem}
+          className="flex-1 border-dashed"
+        >
+          <Plus className="h-3.5 w-3.5 mr-1.5" />
+          Add line item
+        </Button>
+        {cannedJobs.length > 0 && (
+          <div className="relative">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCannedMenu((v) => !v)}
+              className="border-dashed"
+            >
+              From template
+              <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
+            </Button>
+            {showCannedMenu && (
+              <>
+                {/* Backdrop */}
+                <div className="fixed inset-0 z-10" onClick={() => setShowCannedMenu(false)} />
+                <div className="absolute right-0 top-full mt-1 z-20 w-64 rounded-lg border bg-popover shadow-md py-1 max-h-60 overflow-y-auto">
+                  {cannedJobs.map((job) => (
+                    <button
+                      key={job.id}
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
+                      onClick={() => addFromCannedJob(job)}
+                    >
+                      <p className="font-medium leading-tight">{job.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {job.type} · {formatCurrency(job.unitPrice.toNumber())}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Totals */}
       <div className="border-t pt-4 space-y-1.5 text-sm">

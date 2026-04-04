@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Users } from "lucide-react"
+import { Briefcase, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,12 +34,18 @@ export default async function SettingsPage() {
     <div className="max-w-2xl space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        {(role === "OWNER" || role === "MANAGER") && (
-          <Button variant="outline" size="sm" render={<Link href="/settings/users" />}>
-            <Users className="h-4 w-4 mr-2" />
-            Manage Users
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" render={<Link href="/settings/canned-jobs" />}>
+            <Briefcase className="h-4 w-4 mr-2" />
+            Canned Jobs
           </Button>
-        )}
+          {(role === "OWNER" || role === "MANAGER") && (
+            <Button variant="outline" size="sm" render={<Link href="/settings/users" />}>
+              <Users className="h-4 w-4 mr-2" />
+              Manage Users
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Shop Profile */}

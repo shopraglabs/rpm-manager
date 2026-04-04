@@ -35,7 +35,7 @@ export default async function NewWorkOrderPage({
   } = await searchParams
   const { tenantId } = await requireAuth()
 
-  const [customers, technicians, cannedJobs] = await Promise.all([
+  const [customers, technicians, cannedJobs, tenant] = await Promise.all([
     prisma.customer.findMany({
       where: { tenantId },
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
@@ -51,6 +51,7 @@ export default async function NewWorkOrderPage({
     }),
     getTechnicians(tenantId),
     getCannedJobs({ activeOnly: true }),
+    prisma.tenant.findUnique({ where: { id: tenantId }, select: { laborRate: true, taxRate: true } }),
   ])
 
   const customerVehicles = Object.fromEntries(customers.map((c) => [c.id, c.vehicles]))
@@ -141,7 +142,11 @@ export default async function NewWorkOrderPage({
         {/* Line Items */}
         <div className="rounded-xl border bg-card p-6">
           <h2 className="font-medium mb-4">Labor &amp; Parts</h2>
-          <LineItemEditor cannedJobs={cannedJobs} />
+          <LineItemEditor
+            cannedJobs={cannedJobs}
+            laborRate={tenant?.laborRate?.toNumber() ?? 0}
+            taxRate={tenant?.taxRate?.toNumber() ?? 0}
+          />
         </div>
 
         {/* Notes */}

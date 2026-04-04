@@ -44,13 +44,13 @@ const TYPE_LABELS: Record<LineItemType, string> = {
   DISCOUNT: "Discount",
 }
 
-function newItem(sortOrder: number): LineItem {
+function newItem(sortOrder: number, laborRate = 0): LineItem {
   return {
     id: crypto.randomUUID(),
     type: "LABOR",
     description: "",
     quantity: "1",
-    unitPrice: "0.00",
+    unitPrice: laborRate > 0 ? laborRate.toFixed(2) : "0.00",
     laborHours: "",
     partNumber: "",
     sortOrder,
@@ -76,9 +76,10 @@ type Props = {
   }>
   taxRate?: number
   cannedJobs?: CannedJobOption[]
+  laborRate?: number
 }
 
-export function LineItemEditor({ defaultItems, taxRate = 0, cannedJobs = [] }: Props) {
+export function LineItemEditor({ defaultItems, taxRate = 0, cannedJobs = [], laborRate = 0 }: Props) {
   const [showCannedMenu, setShowCannedMenu] = useState(false)
   const [invSearch, setInvSearch] = useState<{ itemId: string; query: string } | null>(null)
   const [invResults, setInvResults] = useState<InventorySearchResult[]>([])
@@ -97,20 +98,38 @@ export function LineItemEditor({ defaultItems, taxRate = 0, cannedJobs = [] }: P
         sortOrder: item.sortOrder ?? idx,
       }))
     }
-    return [newItem(0)]
+    return [newItem(0, laborRate)]
   })
 
   const addItem = useCallback(() => {
-    setItems((prev) => [...prev, newItem(prev.length)])
-  }, [])
+    setItems((prev) => [...prev, newItem(prev.length, laborRate)])
+  }, [laborRate])
 
   const removeItem = useCallback((id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id))
   }, [])
 
-  const updateItem = useCallback((id: string, field: keyof LineItem, value: string) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)))
-  }, [])
+  const updateItem = useCallback(
+    (id: string, field: keyof LineItem, value: string) => {
+      setItems((prev) =>
+        prev.map((item) => {
+          if (item.id !== id) return item
+          const updated = { ...item, [field]: value }
+          // Auto-fill labor rate when type switches to LABOR and price is still 0
+          if (
+            field === "type" &&
+            value === "LABOR" &&
+            laborRate > 0 &&
+            (parseFloat(item.unitPrice) === 0 || item.unitPrice === "0.00")
+          ) {
+            updated.unitPrice = laborRate.toFixed(2)
+          }
+          return updated
+        })
+      )
+    },
+    [laborRate]
+  )
 
   const addFromCannedJob = useCallback((job: CannedJobOption) => {
     setItems((prev) => [

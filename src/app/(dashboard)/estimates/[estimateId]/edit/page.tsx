@@ -10,6 +10,8 @@ import { EstimateFormShell } from "@/components/estimates/estimate-form-shell"
 import { getEstimate } from "@/modules/estimates/queries"
 import { updateEstimate, deleteEstimate } from "@/modules/estimates/actions"
 import { getCannedJobs } from "@/modules/canned-jobs/queries"
+import { requireAuth } from "@/lib/auth/session"
+import { prisma } from "@/lib/db"
 
 export const metadata: Metadata = { title: "Edit Estimate" }
 
@@ -19,9 +21,11 @@ export default async function EditEstimatePage({
   params: Promise<{ estimateId: string }>
 }) {
   const { estimateId } = await params
-  const [estimate, cannedJobs] = await Promise.all([
+  const { tenantId } = await requireAuth()
+  const [estimate, cannedJobs, tenant] = await Promise.all([
     getEstimate(estimateId),
     getCannedJobs({ activeOnly: true }),
+    prisma.tenant.findUnique({ where: { id: tenantId }, select: { laborRate: true, taxRate: true } }),
   ])
   if (!estimate) notFound()
   if (estimate.status === "CONVERTED") redirect(`/estimates/${estimateId}`)
@@ -85,6 +89,8 @@ export default async function EditEstimatePage({
           <h2 className="font-medium mb-4">Line Items</h2>
           <LineItemEditor
             cannedJobs={cannedJobs}
+            laborRate={tenant?.laborRate?.toNumber() ?? 0}
+            taxRate={tenant?.taxRate?.toNumber() ?? 0}
             defaultItems={estimate.lineItems.map((item) => ({
               type: item.type,
               description: item.description,

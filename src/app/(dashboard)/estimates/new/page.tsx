@@ -22,7 +22,7 @@ export default async function NewEstimatePage({
   const { customerId: defaultCustomerId, vehicleId: defaultVehicleId } = await searchParams
   const { tenantId } = await requireAuth()
 
-  const [customers, cannedJobs] = await Promise.all([
+  const [customers, cannedJobs, tenant] = await Promise.all([
     prisma.customer.findMany({
       where: { tenantId },
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
@@ -37,6 +37,7 @@ export default async function NewEstimatePage({
       },
     }),
     getCannedJobs({ activeOnly: true }),
+    prisma.tenant.findUnique({ where: { id: tenantId }, select: { laborRate: true, taxRate: true } }),
   ])
 
   const customerVehicles = Object.fromEntries(customers.map((c) => [c.id, c.vehicles]))
@@ -77,7 +78,11 @@ export default async function NewEstimatePage({
         {/* Line Items */}
         <div className="rounded-xl border bg-card p-6">
           <h2 className="font-medium mb-4">Line Items</h2>
-          <LineItemEditor cannedJobs={cannedJobs} />
+          <LineItemEditor
+            cannedJobs={cannedJobs}
+            laborRate={tenant?.laborRate?.toNumber() ?? 0}
+            taxRate={tenant?.taxRate?.toNumber() ?? 0}
+          />
         </div>
 
         {/* Notes */}

@@ -6,11 +6,7 @@ export const metadata: Metadata = {
   title: "Log In",
 }
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ redirectTo?: string; error?: string }>
-}) {
+export default function LoginPage() {
   return (
     <div className="bg-card rounded-xl border shadow-sm p-8">
       <div className="mb-6">
@@ -19,7 +15,7 @@ export default function LoginPage({
           Sign in to your shop account
         </p>
       </div>
-      <LoginForm searchParams={searchParams} />
+      <LoginForm />
       <p className="text-center text-sm text-muted-foreground mt-6">
         Don&apos;t have an account?{" "}
         <Link href="/signup" className="text-primary font-medium hover:underline">

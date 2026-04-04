@@ -3,7 +3,6 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ChevronLeft, Pencil, Plus, FileText, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { getVehicle } from "@/modules/vehicles/queries"
 import { formatDate, formatCurrency } from "@/lib/utils/format"
 

@@ -17,11 +17,7 @@ function SubmitButton() {
   )
 }
 
-export function LoginForm({
-  searchParams,
-}: {
-  searchParams: Promise<{ redirectTo?: string; error?: string }>
-}) {
+export function LoginForm() {
   const [state, formAction] = useActionState(signIn, { error: null })
 
   return (

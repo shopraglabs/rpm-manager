@@ -27,13 +27,6 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Cancelled",
 }
 
-const HOURS = Array.from({ length: 12 }, (_, i) => i + 7) // 7am–6pm
-
-function formatTimeLabel(hour: number) {
-  const h = hour % 12 || 12
-  return `${h}${hour < 12 ? "am" : "pm"}`
-}
-
 function parseDate(str: string | undefined, fallback: Date): Date {
   if (!str) return fallback
   const d = new Date(str + "T00:00:00")

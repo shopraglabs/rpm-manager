@@ -44,8 +44,6 @@ export default async function CustomerInvoicePage({
     invoice.status === "OVERDUE" ||
     (invoice.dueDate && new Date(invoice.dueDate) < new Date() && invoice.amountDue.toNumber() > 0)
 
-  const vehicleLabel = "Vehicle" // invoice doesn't have vehicle directly
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}

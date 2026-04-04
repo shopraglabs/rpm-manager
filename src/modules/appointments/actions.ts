@@ -33,7 +33,7 @@ export async function createAppointment(formData: FormData) {
   const end = new Date(parsed.data.endTime)
   if (end <= start) return { error: "End time must be after start time" }
 
-  const appointment = await prisma.appointment.create({
+  await prisma.appointment.create({
     data: {
       tenantId,
       customerName: parsed.data.customerName,

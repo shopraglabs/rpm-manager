@@ -58,6 +58,7 @@ export default async function InvoiceDetailPage({
   const isVoid = invoice.status === "VOID"
   const isPaid = invoice.status === "PAID"
   const canSend = !isVoid && invoice.status === "DRAFT"
+  const canResend = !isVoid && !isPaid && ["SENT", "PARTIALLY_PAID", "OVERDUE"].includes(invoice.status)
   const canVoid = !isVoid && !isPaid
   const canPayment = !isVoid && !isPaid
   const amountDue = invoice.amountDue.toNumber()
@@ -134,6 +135,18 @@ export default async function InvoiceDetailPage({
               <Button type="submit" variant="outline">
                 <Send className="h-4 w-4 mr-2" />
                 Send
+              </Button>
+            </form>
+          )}
+          {canResend && (
+            <form
+              action={async () => {
+                await sendWithId()
+              }}
+            >
+              <Button type="submit" variant="outline" size="sm">
+                <Send className="h-4 w-4 mr-2" />
+                Resend
               </Button>
             </form>
           )}

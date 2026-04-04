@@ -12,6 +12,9 @@ import {
   CheckCircle2,
   Clock,
   Bell,
+  Users,
+  Plus,
+  ArrowRight,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { requireAuth } from "@/lib/auth/session"
@@ -69,6 +72,7 @@ export default async function DashboardPage() {
   const { overduePromisedDates } = stats
 
   const growthPositive = (stats.monthGrowth ?? 0) >= 0
+  const isNewShop = stats.openWorkOrders === 0 && stats.recentWorkOrders.length === 0
 
   return (
     <div className="space-y-6">
@@ -154,6 +158,65 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Getting started — only shown to new shops with no activity */}
+      {isNewShop && (
+        <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-6">
+          <div className="flex items-start gap-4">
+            <div className="rounded-lg bg-primary/10 p-2.5 shrink-0">
+              <Wrench className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-semibold text-base">Get started with RPM Manager</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Your shop is all set up. Follow these steps to start managing your first repair order.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                <Link
+                  href="/customers/new"
+                  className="flex items-center gap-3 rounded-lg border bg-card p-3 hover:bg-muted/50 transition-colors group"
+                >
+                  <Users className="h-4 w-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">1. Add a customer</p>
+                    <p className="text-xs text-muted-foreground">Name, phone, email</p>
+                  </div>
+                  <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                </Link>
+                <Link
+                  href="/estimates/new"
+                  className="flex items-center gap-3 rounded-lg border bg-card p-3 hover:bg-muted/50 transition-colors group"
+                >
+                  <FileText className="h-4 w-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">2. Write an estimate</p>
+                    <p className="text-xs text-muted-foreground">Labor, parts &amp; fees</p>
+                  </div>
+                  <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                </Link>
+                <Link
+                  href="/work-orders/new"
+                  className="flex items-center gap-3 rounded-lg border bg-card p-3 hover:bg-muted/50 transition-colors group"
+                >
+                  <Plus className="h-4 w-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">3. Open a work order</p>
+                    <p className="text-xs text-muted-foreground">Track the repair</p>
+                  </div>
+                  <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                </Link>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                Also check out{" "}
+                <Link href="/settings" className="text-primary hover:underline">
+                  Settings
+                </Link>{" "}
+                to add your shop phone, address, tax rate, and labor rate.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Alerts */}
       {(stats.readyForPickupList.length > 0 ||

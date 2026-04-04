@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { ChevronsUpDown } from "lucide-react"
+import { ChevronsUpDown, Plus, UserPlus } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
@@ -33,6 +34,8 @@ type Props = {
   defaultCustomerId?: string
   defaultVehicleId?: string
   customerVehicles: Record<string, Vehicle[]>
+  /** The current page path so "add customer" can redirect back here */
+  returnPath?: string
 }
 
 export function CustomerVehicleSelector({
@@ -40,6 +43,7 @@ export function CustomerVehicleSelector({
   defaultCustomerId,
   defaultVehicleId,
   customerVehicles,
+  returnPath,
 }: Props) {
   const [customerId, setCustomerId] = useState(defaultCustomerId ?? "")
   const [vehicleId, setVehicleId] = useState(defaultVehicleId ?? "")
@@ -63,7 +67,17 @@ export function CustomerVehicleSelector({
 
       {/* Customer picker */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Customer *</label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Customer *</label>
+          <Link
+            href="/customers/new"
+            className="flex items-center gap-1 text-xs text-primary hover:underline"
+            tabIndex={-1}
+          >
+            <UserPlus className="h-3 w-3" />
+            New customer
+          </Link>
+        </div>
         <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
           <Button
             type="button"
@@ -80,7 +94,18 @@ export function CustomerVehicleSelector({
             <Command>
               <CommandInput placeholder="Search customers…" />
               <CommandList>
-                <CommandEmpty>No customers found.</CommandEmpty>
+                <CommandEmpty>
+                  <div className="py-2 text-center">
+                    <p className="text-xs text-muted-foreground mb-2">No customers found</p>
+                    <Link
+                      href="/customers/new"
+                      className="inline-flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
+                    >
+                      <UserPlus className="h-3 w-3" />
+                      Create new customer
+                    </Link>
+                  </div>
+                </CommandEmpty>
                 <CommandGroup>
                   {customers.map((c) => (
                     <CommandItem
@@ -107,26 +132,51 @@ export function CustomerVehicleSelector({
 
       {/* Vehicle picker */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Vehicle *</label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Vehicle *</label>
+          {customerId && (
+            <Link
+              href={`/customers/${customerId}/vehicles/new`}
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
+              tabIndex={-1}
+            >
+              <Plus className="h-3 w-3" />
+              Add vehicle
+            </Link>
+          )}
+        </div>
         <Popover open={vehicleOpen} onOpenChange={setVehicleOpen}>
           <Button
             type="button"
             variant="outline"
             render={<PopoverTrigger />}
             className="w-full justify-between font-normal"
-            disabled={!customerId || vehicles.length === 0}
+            disabled={!customerId}
           >
             {selectedVehicle
               ? vehicleLabel(selectedVehicle)
               : vehicles.length === 0 && customerId
-                ? "No vehicles on file"
+                ? "No vehicles — add one above"
                 : "Select vehicle…"}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
           <PopoverContent className="w-72 p-0" align="start">
             <Command>
               <CommandList>
-                <CommandEmpty>No vehicles found.</CommandEmpty>
+                <CommandEmpty>
+                  <div className="py-2 text-center">
+                    <p className="text-xs text-muted-foreground mb-2">No vehicles on file</p>
+                    {customerId && (
+                      <Link
+                        href={`/customers/${customerId}/vehicles/new`}
+                        className="inline-flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Add a vehicle
+                      </Link>
+                    )}
+                  </div>
+                </CommandEmpty>
                 <CommandGroup>
                   {vehicles.map((v) => (
                     <CommandItem

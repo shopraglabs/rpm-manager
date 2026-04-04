@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { EstimateFormShell } from "@/components/estimates/estimate-form-shell"
+import { AppointmentCustomerPicker } from "@/components/appointments/appointment-customer-picker"
 import { updateAppointment, deleteAppointment } from "@/modules/appointments/actions"
 import { requireAuth } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
@@ -37,12 +38,34 @@ export default async function EditAppointmentPage({
   const { appointmentId } = await params
   const { tenantId } = await requireAuth()
 
-  const [apt, technicians] = await Promise.all([
+  const [apt, technicians, customers] = await Promise.all([
     prisma.appointment.findFirst({ where: { id: appointmentId, tenantId } }),
     prisma.user.findMany({
       where: { tenantId, isActive: true },
       select: { id: true, firstName: true, lastName: true },
       orderBy: [{ firstName: "asc" }],
+    }),
+    prisma.customer.findMany({
+      where: { tenantId },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        email: true,
+        vehicles: {
+          select: {
+            id: true,
+            year: true,
+            make: true,
+            model: true,
+            trim: true,
+            licensePlate: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
     }),
   ])
   if (!apt) notFound()
@@ -152,34 +175,15 @@ export default async function EditAppointmentPage({
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-6 space-y-4">
-          <h2 className="font-medium">Customer Info</h2>
-
-          <div className="space-y-2">
-            <Label htmlFor="customerName">Name *</Label>
-            <Input id="customerName" name="customerName" defaultValue={apt.customerName} required />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="customerPhone">Phone</Label>
-              <Input
-                id="customerPhone"
-                name="customerPhone"
-                type="tel"
-                defaultValue={apt.customerPhone ?? ""}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="customerEmail">Email</Label>
-              <Input
-                id="customerEmail"
-                name="customerEmail"
-                type="email"
-                defaultValue={apt.customerEmail ?? ""}
-              />
-            </div>
-          </div>
+        <div className="rounded-xl border bg-card p-6">
+          <h2 className="font-medium mb-4">Customer</h2>
+          <AppointmentCustomerPicker
+            customers={customers}
+            defaultCustomerName={apt.customerName}
+            defaultCustomerPhone={apt.customerPhone ?? ""}
+            defaultCustomerEmail={apt.customerEmail ?? ""}
+            defaultVehicleId={apt.vehicleId ?? ""}
+          />
         </div>
       </EstimateFormShell>
     </div>

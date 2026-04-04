@@ -31,10 +31,26 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Cancelled",
 }
 
+const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
 function parseDate(str: string | undefined, fallback: Date): Date {
   if (!str) return fallback
   const d = new Date(str + "T00:00:00")
   return isNaN(d.getTime()) ? fallback : d
+}
+
+/** Returns Monday of the week containing `date`. */
+function getWeekStart(date: Date): Date {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  // JS: 0=Sun, 1=Mon...6=Sat  →  shift so Mon=0
+  const offset = (d.getDay() + 6) % 7
+  d.setDate(d.getDate() - offset)
+  return d
+}
+
+function toDateStr(d: Date) {
+  return d.toISOString().split("T")[0]
 }
 
 export default async function AppointmentsPage({
@@ -47,19 +63,53 @@ export default async function AppointmentsPage({
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+
   const viewDate = parseDate(dateParam, today)
   viewDate.setHours(0, 0, 0, 0)
 
-  const dayStart = new Date(viewDate)
-  const dayEnd = new Date(viewDate)
-  dayEnd.setHours(23, 59, 59, 999)
+  // Week strip: Mon–Sun containing viewDate
+  const weekStart = getWeekStart(viewDate)
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekEnd.getDate() + 7)
 
+  // Build the 7 day objects
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart)
+    d.setDate(d.getDate() + i)
+    return d
+  })
+
+  const prevWeekStart = new Date(weekStart)
+  prevWeekStart.setDate(prevWeekStart.getDate() - 7)
+  const nextWeekStart = new Date(weekStart)
+  nextWeekStart.setDate(nextWeekStart.getDate() + 7)
+
+  // Prev / next day for day nav
   const prevDate = new Date(viewDate)
   prevDate.setDate(prevDate.getDate() - 1)
   const nextDate = new Date(viewDate)
   nextDate.setDate(nextDate.getDate() + 1)
 
-  const toDateStr = (d: Date) => d.toISOString().split("T")[0]
+  // Fetch appointment counts for the week (exclude cancelled/no-show for the dots)
+  const weekAppts = await prisma.appointment.findMany({
+    where: {
+      tenantId,
+      startTime: { gte: weekStart, lt: weekEnd },
+    },
+    select: { startTime: true, status: true },
+  })
+
+  const countByDay: Record<string, number> = {}
+  weekAppts.forEach((apt) => {
+    if (["CANCELLED", "NO_SHOW"].includes(apt.status)) return
+    const key = toDateStr(apt.startTime)
+    countByDay[key] = (countByDay[key] ?? 0) + 1
+  })
+
+  // Fetch appointments for the selected day
+  const dayStart = new Date(viewDate)
+  const dayEnd = new Date(viewDate)
+  dayEnd.setHours(23, 59, 59, 999)
 
   const appointments = await prisma.appointment.findMany({
     where: {
@@ -74,6 +124,8 @@ export default async function AppointmentsPage({
   })
 
   const isToday = viewDate.getTime() === today.getTime()
+  const viewDateStr = toDateStr(viewDate)
+  const todayStr = toDateStr(today)
 
   return (
     <div>
@@ -91,14 +143,106 @@ export default async function AppointmentsPage({
             {isToday && <span className="ml-2 text-primary font-medium">Today</span>}
           </p>
         </div>
-        <Button render={<Link href="/appointments/new" />}>
+        <Button render={<Link href={`/appointments/new?date=${viewDateStr}`} />}>
           <Plus className="h-4 w-4 mr-2" />
           New Appointment
         </Button>
       </div>
 
-      {/* Date navigation */}
-      <div className="flex items-center gap-2 mb-6">
+      {/* Week strip */}
+      <div className="rounded-xl border bg-card mb-6 overflow-hidden">
+        {/* Week nav header */}
+        <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            render={<Link href={`/appointments?date=${toDateStr(prevWeekStart)}`} />}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground">
+              {weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              {" – "}
+              {weekDays[6].toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            </span>
+            {viewDateStr !== todayStr && (
+              <Link
+                href="/appointments"
+                className="text-xs text-primary hover:underline"
+              >
+                Today
+              </Link>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            render={<Link href={`/appointments?date=${toDateStr(nextWeekStart)}`} />}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Day cells */}
+        <div className="grid grid-cols-7">
+          {weekDays.map((day, i) => {
+            const dayStr = toDateStr(day)
+            const isSelected = dayStr === viewDateStr
+            const isTodayDay = dayStr === todayStr
+            const count = countByDay[dayStr] ?? 0
+
+            return (
+              <Link
+                key={dayStr}
+                href={`/appointments?date=${dayStr}`}
+                className={`flex flex-col items-center py-3 transition-colors border-r last:border-r-0 ${
+                  isSelected
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted/50"
+                }`}
+              >
+                <span
+                  className={`text-[10px] font-medium uppercase tracking-wide mb-1 ${
+                    isSelected ? "text-primary-foreground/80" : "text-muted-foreground"
+                  }`}
+                >
+                  {DAY_NAMES[i]}
+                </span>
+                <span
+                  className={`text-sm font-semibold leading-none ${
+                    isTodayDay && !isSelected
+                      ? "text-primary"
+                      : isSelected
+                        ? "text-primary-foreground"
+                        : ""
+                  }`}
+                >
+                  {day.getDate()}
+                </span>
+                {count > 0 ? (
+                  <span
+                    className={`mt-1.5 text-[10px] font-medium rounded-full px-1.5 py-0.5 leading-none ${
+                      isSelected
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                ) : (
+                  <span className="mt-1.5 h-[18px]" />
+                )}
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Day navigation — prev/next */}
+      <div className="flex items-center gap-2 mb-4">
         <Button
           variant="outline"
           size="sm"
@@ -106,11 +250,6 @@ export default async function AppointmentsPage({
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        {!isToday && (
-          <Button variant="outline" size="sm" render={<Link href="/appointments" />}>
-            Today
-          </Button>
-        )}
         <Button
           variant="outline"
           size="sm"
@@ -120,7 +259,7 @@ export default async function AppointmentsPage({
         </Button>
       </div>
 
-      {/* Day view grid */}
+      {/* Day view */}
       <div className="rounded-xl border bg-card overflow-hidden">
         {appointments.length === 0 ? (
           <div className="p-12 text-center">
@@ -129,7 +268,7 @@ export default async function AppointmentsPage({
               variant="outline"
               size="sm"
               className="mt-4"
-              render={<Link href="/appointments/new" />}
+              render={<Link href={`/appointments/new?date=${viewDateStr}`} />}
             >
               Schedule appointment
             </Button>
@@ -189,7 +328,7 @@ export default async function AppointmentsPage({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                     {/* Edit */}
                     <Button
                       variant="ghost"

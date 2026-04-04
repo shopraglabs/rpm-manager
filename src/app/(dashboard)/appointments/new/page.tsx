@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { EstimateFormShell } from "@/components/estimates/estimate-form-shell"
+import { AppointmentCustomerPicker } from "@/components/appointments/appointment-customer-picker"
 import { createAppointment } from "@/modules/appointments/actions"
 import { requireAuth } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
@@ -27,13 +28,37 @@ export default async function NewAppointmentPage({
   const { date } = await searchParams
   const { tenantId } = await requireAuth()
 
-  const technicians = await prisma.user.findMany({
-    where: { tenantId, isActive: true },
-    select: { id: true, firstName: true, lastName: true },
-    orderBy: [{ firstName: "asc" }],
-  })
+  const [technicians, customers] = await Promise.all([
+    prisma.user.findMany({
+      where: { tenantId, isActive: true },
+      select: { id: true, firstName: true, lastName: true },
+      orderBy: [{ firstName: "asc" }],
+    }),
+    prisma.customer.findMany({
+      where: { tenantId },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        email: true,
+        vehicles: {
+          select: {
+            id: true,
+            year: true,
+            make: true,
+            model: true,
+            trim: true,
+            licensePlate: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    }),
+  ])
 
-  // Default start = today 9am, end = today 10am
+  // Default start = chosen date 9am, end = 10am
   const defaultDate = date ?? new Date().toISOString().split("T")[0]
   const defaultStart = `${defaultDate}T09:00`
   const defaultEnd = `${defaultDate}T10:00`
@@ -41,7 +66,11 @@ export default async function NewAppointmentPage({
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="sm" render={<Link href="/appointments" />}>
+        <Button
+          variant="ghost"
+          size="sm"
+          render={<Link href={date ? `/appointments?date=${date}` : "/appointments"} />}
+        >
           <ChevronLeft className="h-4 w-4" />
           Appointments
         </Button>
@@ -55,13 +84,18 @@ export default async function NewAppointmentPage({
         action={createAppointment}
         submitLabel="Schedule Appointment"
         cancelSlot={
-          <Button type="button" variant="outline" render={<Link href="/appointments" />}>
+          <Button
+            type="button"
+            variant="outline"
+            render={<Link href={date ? `/appointments?date=${date}` : "/appointments"} />}
+          >
             Cancel
           </Button>
         }
       >
+        {/* Service details */}
         <div className="rounded-xl border bg-card p-6 space-y-4">
-          <h2 className="font-medium">Details</h2>
+          <h2 className="font-medium">Service Details</h2>
 
           <div className="space-y-2">
             <Label htmlFor="title">Service / Title *</Label>
@@ -118,24 +152,10 @@ export default async function NewAppointmentPage({
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-6 space-y-4">
-          <h2 className="font-medium">Customer Info</h2>
-
-          <div className="space-y-2">
-            <Label htmlFor="customerName">Name *</Label>
-            <Input id="customerName" name="customerName" required />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="customerPhone">Phone</Label>
-              <Input id="customerPhone" name="customerPhone" type="tel" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="customerEmail">Email</Label>
-              <Input id="customerEmail" name="customerEmail" type="email" />
-            </div>
-          </div>
+        {/* Customer */}
+        <div className="rounded-xl border bg-card p-6">
+          <h2 className="font-medium mb-4">Customer</h2>
+          <AppointmentCustomerPicker customers={customers} />
         </div>
       </EstimateFormShell>
     </div>

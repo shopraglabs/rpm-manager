@@ -57,11 +57,41 @@ export default async function EstimatesPage({
         </Button>
       </div>
 
-      <div className="mb-4">
+      <div className="flex flex-wrap items-center gap-3 mb-4">
         <SearchBar
           placeholder="Search by customer, vehicle, estimate #…"
           initialValue={search ?? ""}
         />
+        <div className="flex flex-wrap gap-1.5">
+          {(["DRAFT", "SENT", "VIEWED", "APPROVED", "DECLINED", "EXPIRED"] as const).map((s) => {
+            const isActive = status === s
+            const sp = new URLSearchParams()
+            if (search) sp.set("search", search)
+            if (!isActive) sp.set("status", s)
+            const href = `/estimates?${sp.toString()}`
+            return (
+              <Link
+                key={s}
+                href={href}
+                className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                  isActive
+                    ? `${STATUS_COLORS[s]} ring-1 ring-current`
+                    : "bg-background text-muted-foreground border-border hover:border-muted-foreground"
+                }`}
+              >
+                {STATUS_LABELS[s]}
+              </Link>
+            )
+          })}
+          {status && (
+            <Link
+              href={search ? `/estimates?search=${encodeURIComponent(search)}` : "/estimates"}
+              className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border border-border text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ✕ Clear
+            </Link>
+          )}
+        </div>
       </div>
 
       {result.items.length === 0 ? (

@@ -63,9 +63,9 @@ export async function getInvoiceByToken(token: string) {
   return prisma.invoice.findUnique({
     where: { shareToken: token },
     include: {
-      customer: { select: { firstName: true, lastName: true } },
+      customer: { select: { firstName: true, lastName: true, email: true } },
       lineItems: { orderBy: { sortOrder: "asc" } },
-      payments: { select: { amount: true, method: true, createdAt: true } },
+      payments: { select: { amount: true, method: true, createdAt: true, stripePaymentId: true } },
     },
   })
 }

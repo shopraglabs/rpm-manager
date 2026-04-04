@@ -5,6 +5,7 @@ import { z } from "zod"
 import { prisma } from "@/lib/db"
 import { requireAuth } from "@/lib/auth/session"
 import { requirePermission } from "@/lib/auth/permissions"
+import { disconnectStripeAccount } from "@/lib/integrations/stripe"
 
 const shopProfileSchema = z.object({
   name: z.string().min(1, "Shop name is required"),
@@ -154,4 +155,29 @@ export async function deactivateUser(userId: string) {
 
   revalidatePath("/settings/users")
   return { success: true }
+}
+
+export async function disconnectStripe() {
+  const { tenantId, role } = await requireAuth()
+  requirePermission(role, "settings:update")
+
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { stripeAccountId: true },
+  })
+  if (!tenant?.stripeAccountId) return { error: "No Stripe account connected" }
+
+  try {
+    await disconnectStripeAccount(tenant.stripeAccountId)
+  } catch (err) {
+    console.error("[disconnectStripe] Stripe deauthorize failed:", err)
+    // Still clear our side even if Stripe call fails
+  }
+
+  await prisma.tenant.update({
+    where: { id: tenantId },
+    data: { stripeAccountId: null },
+  })
+
+  revalidatePath("/settings/billing")
 }

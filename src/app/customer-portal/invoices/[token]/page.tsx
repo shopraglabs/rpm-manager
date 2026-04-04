@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { CheckCircle2, Clock, AlertCircle } from "lucide-react"
 import { getInvoiceByToken } from "@/modules/invoices/queries"
+import { StripePayButton } from "@/components/invoices/stripe-pay-button"
 import { prisma } from "@/lib/db"
 import { formatCurrency, formatDate } from "@/lib/utils/format"
 
@@ -26,10 +27,13 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 
 export default async function CustomerInvoicePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>
+  searchParams: Promise<{ payment?: string }>
 }) {
   const { token } = await params
+  const { payment } = await searchParams
   const invoice = await getInvoiceByToken(token)
   if (!invoice) notFound()
 
@@ -44,10 +48,13 @@ export default async function CustomerInvoicePage({
       city: true,
       state: true,
       zip: true,
+      stripeAccountId: true,
     },
   })
 
   const isPaid = invoice.status === "PAID"
+  const amountDue = invoice.amountDue.toNumber()
+  const canPayOnline = !isPaid && amountDue > 0 && !!tenant?.stripeAccountId
   const isOverdue =
     invoice.status === "OVERDUE" ||
     (invoice.dueDate && new Date(invoice.dueDate) < new Date() && invoice.amountDue.toNumber() > 0)
@@ -74,6 +81,27 @@ export default async function CustomerInvoicePage({
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        {/* Payment outcome banners from Stripe redirect */}
+        {payment === "success" && (
+          <div className="rounded-xl bg-green-50 border border-green-200 px-5 py-4 flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+            <div>
+              <p className="font-medium text-green-800">Payment submitted!</p>
+              <p className="text-sm text-green-700">
+                Your payment is being processed. This page will update shortly.
+              </p>
+            </div>
+          </div>
+        )}
+        {payment === "cancelled" && (
+          <div className="rounded-xl bg-amber-50 border border-amber-200 px-5 py-4 flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+            <p className="text-sm text-amber-800">
+              Payment was cancelled. You can try again below.
+            </p>
+          </div>
+        )}
+
         {/* Payment status banner */}
         {isPaid && (
           <div className="rounded-xl bg-green-50 border border-green-200 px-5 py-4 flex items-center gap-3">
@@ -236,6 +264,17 @@ export default async function CustomerInvoicePage({
           <div className="rounded-xl border bg-card p-5">
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Notes</p>
             <p className="text-sm whitespace-pre-wrap">{invoice.notes}</p>
+          </div>
+        )}
+
+        {/* Online payment */}
+        {canPayOnline && payment !== "success" && (
+          <div className="rounded-xl border bg-card p-5">
+            <p className="font-medium mb-1">Pay Online</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Balance due: {formatCurrency(amountDue)}
+            </p>
+            <StripePayButton invoiceToken={token} amountDue={amountDue} />
           </div>
         )}
 

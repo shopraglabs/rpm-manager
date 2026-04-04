@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Briefcase, Users } from "lucide-react"
+import { Briefcase, CreditCard, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -35,6 +35,10 @@ export default async function SettingsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" render={<Link href="/settings/billing" />}>
+            <CreditCard className="h-4 w-4 mr-2" />
+            Billing
+          </Button>
           <Button variant="outline" size="sm" render={<Link href="/settings/canned-jobs" />}>
             <Briefcase className="h-4 w-4 mr-2" />
             Canned Jobs

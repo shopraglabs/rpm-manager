@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Pencil, Send, Wrench } from "lucide-react"
+import { ChevronLeft, Pencil, Printer, Send, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getEstimate } from "@/modules/estimates/queries"
@@ -81,6 +81,14 @@ export default async function EstimateDetailPage({
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href={`/estimates/${estimateId}/print`} target="_blank" />}
+          >
+            <Printer className="h-4 w-4 mr-2" />
+            Print
+          </Button>
           {canSend && (
             <form
               action={async () => {

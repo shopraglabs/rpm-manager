@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Bell, Pencil, Plus, ChevronLeft, ChevronRight } from "lucide-react"
+import { Bell, Pencil, Plus, ChevronLeft, ChevronRight, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { requireAuth } from "@/lib/auth/session"
@@ -69,7 +69,7 @@ export default async function AppointmentsPage({
     orderBy: { startTime: "asc" },
     include: {
       assignedTo: { select: { firstName: true, lastName: true } },
-      vehicle: { select: { year: true, make: true, model: true } },
+      vehicle: { select: { year: true, make: true, model: true, customerId: true } },
     },
   })
 
@@ -233,6 +233,19 @@ export default async function AppointmentsPage({
                           Arrived
                         </Button>
                       </form>
+                    )}
+                    {apt.status === "ARRIVED" && apt.vehicleId && apt.vehicle?.customerId && (
+                      <Button
+                        size="sm"
+                        render={
+                          <Link
+                            href={`/work-orders/new?vehicleId=${apt.vehicleId}&customerId=${apt.vehicle.customerId}`}
+                          />
+                        }
+                      >
+                        <Wrench className="h-3.5 w-3.5 mr-1.5" />
+                        Create WO
+                      </Button>
                     )}
                     {["SCHEDULED", "CONFIRMED"].includes(apt.status) && (
                       <form

@@ -10,6 +10,7 @@ import {
   Package,
   CalendarDays,
   CheckCircle2,
+  Bell,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { requireAuth } from "@/lib/auth/session"
@@ -350,6 +351,54 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Upcoming service reminders */}
+      {stats.upcomingServiceReminders.length > 0 && (
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b">
+            <div className="flex items-center gap-2">
+              <Bell className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-medium">Upcoming Service Reminders</h2>
+              <span className="text-xs bg-orange-100 text-orange-700 rounded-full px-1.5 py-0.5 font-medium">
+                {stats.upcomingServiceReminders.length}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">Next 30 days</p>
+          </div>
+          <ul className="divide-y">
+            {stats.upcomingServiceReminders.map((reminder) => (
+              <li key={reminder.id}>
+                <Link
+                  href={`/vehicles/${reminder.vehicle.id}`}
+                  className="flex items-center justify-between px-5 py-3 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{reminder.service}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {reminder.customer.firstName} {reminder.customer.lastName} ·{" "}
+                      {[reminder.vehicle.year, reminder.vehicle.make, reminder.vehicle.model]
+                        .filter(Boolean)
+                        .join(" ")}
+                    </p>
+                  </div>
+                  <div className="text-right ml-3 shrink-0">
+                    {reminder.dueDate && (
+                      <p className="text-xs font-medium text-orange-700">
+                        {formatDate(reminder.dueDate)}
+                      </p>
+                    )}
+                    {reminder.dueMileage && (
+                      <p className="text-xs text-muted-foreground">
+                        {reminder.dueMileage.toLocaleString()} mi
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

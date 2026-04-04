@@ -24,6 +24,7 @@ export async function getDashboardStats() {
     todayAppointments,
     overdueInvoiceList,
     readyForPickupList,
+    upcomingServiceReminders,
   ] = await Promise.all([
     // Open work orders (not delivered or cancelled)
     prisma.workOrder.count({
@@ -154,6 +155,31 @@ export async function getDashboardStats() {
         vehicle: { select: { year: true, make: true, model: true } },
       },
     }),
+
+    // Upcoming service reminders (next 30 days, not yet completed or sent)
+    prisma.serviceReminder.findMany({
+      where: {
+        tenantId,
+        isCompleted: false,
+        reminderSentAt: null,
+        dueDate: {
+          gte: today,
+          lte: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000),
+        },
+      },
+      orderBy: { dueDate: "asc" },
+      take: 5,
+      select: {
+        id: true,
+        service: true,
+        dueDate: true,
+        dueMileage: true,
+        vehicle: {
+          select: { id: true, year: true, make: true, model: true },
+        },
+        customer: { select: { firstName: true, lastName: true } },
+      },
+    }),
   ])
 
   const revenueToday = todayPayments._sum.amount?.toNumber() ?? 0
@@ -179,5 +205,6 @@ export async function getDashboardStats() {
     todayAppointments,
     overdueInvoiceList,
     readyForPickupList,
+    upcomingServiceReminders,
   }
 }

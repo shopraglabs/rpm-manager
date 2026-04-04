@@ -21,6 +21,8 @@ model Tenant {
   state           String?
   zip             String?
   logo            String?
+  website         String?
+  reviewUrl       String?          // Google/Yelp review link for after-service emails
   timezone        String           @default("America/New_York")
   taxRate         Decimal          @default(0) @db.Decimal(5, 4)
   laborRate       Decimal          @default(0) @db.Decimal(10, 2)

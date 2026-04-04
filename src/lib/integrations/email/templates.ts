@@ -493,3 +493,75 @@ export function appointmentReminderEmail(data: AppointmentReminderEmailData): {
 
   return { subject, html: layout(data.shopName, content) }
 }
+
+// ============================================================
+// AFTER-SERVICE THANK YOU / REVIEW REQUEST
+// ============================================================
+
+export interface ThankYouEmailData {
+  shopName: string
+  shopPhone?: string | null
+  shopEmail?: string | null
+  customerFirstName: string
+  vehicleLabel: string
+  orderNumber: string
+  reviewUrl?: string | null
+}
+
+export function thankYouEmail(data: ThankYouEmailData): { subject: string; html: string } {
+  const subject = `Thank you for choosing ${data.shopName}!`
+
+  const content = `
+    <h2 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#0f172a;">
+      Thank you, ${data.customerFirstName}!
+    </h2>
+    <p style="margin:0 0 24px;color:#64748b;font-size:15px;">
+      We appreciate you trusting us with your ${data.vehicleLabel}. Your repair order
+      <strong style="font-family:monospace;">${data.orderNumber}</strong> is complete and your
+      vehicle has been delivered. We hope everything is in great shape!
+    </p>
+
+    ${
+      data.reviewUrl
+        ? `<!-- Review request -->
+    <table width="100%" cellpadding="0" cellspacing="0"
+      style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin-bottom:24px;">
+      <tr>
+        <td style="padding:20px 24px;text-align:center;">
+          <p style="margin:0 0 8px;font-size:15px;font-weight:600;color:#15803d;">
+            Was your experience great?
+          </p>
+          <p style="margin:0 0 16px;font-size:13px;color:#64748b;">
+            A quick review helps other drivers find us and helps us keep improving.
+          </p>
+          <a href="${data.reviewUrl}"
+            style="display:inline-block;background:#15803d;color:#fff;font-size:14px;font-weight:600;
+                   padding:12px 28px;border-radius:8px;text-decoration:none;">
+            Leave a Review ★
+          </a>
+        </td>
+      </tr>
+    </table>`
+        : ""
+    }
+
+    <p style="margin:0 0 16px;font-size:14px;color:#64748b;">
+      If you have any questions or concerns about your service, please don't hesitate to reach out.
+      We stand behind our work and want to make sure you're completely satisfied.
+    </p>
+
+    ${
+      data.shopPhone || data.shopEmail
+        ? `<hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
+    <p style="margin:0;font-size:13px;color:#64748b;text-align:center;">
+      Contact us at
+      ${data.shopPhone ? `<a href="tel:${data.shopPhone}" style="color:#1d4ed8;">${data.shopPhone}</a>` : ""}
+      ${data.shopPhone && data.shopEmail ? " · " : ""}
+      ${data.shopEmail ? `<a href="mailto:${data.shopEmail}" style="color:#1d4ed8;">${data.shopEmail}</a>` : ""}
+    </p>`
+        : ""
+    }
+  `
+
+  return { subject, html: layout(data.shopName, content) }
+}

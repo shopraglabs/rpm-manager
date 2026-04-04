@@ -12,6 +12,8 @@ import { calculateTotals, parseLineItemsFromFormData } from "@/modules/estimates
 import type { WorkOrderStatus } from "@/generated/prisma/enums"
 import { smsProvider } from "@/lib/integrations/sms"
 import { vehicleReadySms } from "@/lib/integrations/sms/templates"
+import { emailProvider } from "@/lib/integrations/email"
+import { thankYouEmail } from "@/lib/integrations/email/templates"
 
 export async function createWorkOrder(formData: FormData) {
   const { tenantId, id: userId, role } = await requireAuth()
@@ -198,6 +200,42 @@ export async function transitionStatus(id: string, formData: FormData) {
           vehicleLabel,
         }),
       })
+    }
+  }
+
+  // Auto-send thank-you + review request email when DELIVERED
+  if (toStatus === "DELIVERED") {
+    try {
+      const wo = await prisma.workOrder.findUnique({
+        where: { id },
+        include: {
+          customer: { select: { email: true, firstName: true } },
+          vehicle: { select: { year: true, make: true, model: true } },
+          tenant: { select: { name: true, phone: true, email: true, reviewUrl: true } },
+        },
+      })
+      if (wo?.customer.email) {
+        const vehicleLabel = [wo.vehicle.year, wo.vehicle.make, wo.vehicle.model]
+          .filter(Boolean)
+          .join(" ")
+        const { subject, html } = thankYouEmail({
+          shopName: wo.tenant.name,
+          shopPhone: wo.tenant.phone,
+          shopEmail: wo.tenant.email,
+          customerFirstName: wo.customer.firstName,
+          vehicleLabel,
+          orderNumber: existing.orderNumber,
+          reviewUrl: wo.tenant.reviewUrl,
+        })
+        await emailProvider.send({
+          to: wo.customer.email,
+          subject,
+          html,
+          replyTo: wo.tenant.email ?? undefined,
+        })
+      }
+    } catch (err) {
+      console.error("[transitionStatus] Failed to send thank-you email:", err)
     }
   }
 

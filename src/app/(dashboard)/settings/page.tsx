@@ -149,6 +149,32 @@ export default async function SettingsPage() {
                     ))}
                   </select>
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      name="website"
+                      type="url"
+                      placeholder="https://yourshop.com"
+                      defaultValue={tenant?.website ?? ""}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reviewUrl">Review link</Label>
+                    <Input
+                      id="reviewUrl"
+                      name="reviewUrl"
+                      type="url"
+                      placeholder="https://g.page/r/… (Google review link)"
+                      defaultValue={tenant?.reviewUrl ?? ""}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Customers are sent this link in the after-service thank-you email.
+                    </p>
+                  </div>
+                </div>
               </div>
             </EstimateFormShell>
           </div>

@@ -18,6 +18,8 @@ const shopProfileSchema = z.object({
   timezone: z.string().optional().or(z.literal("")),
   taxRate: z.coerce.number().min(0).max(100).optional().default(0),
   laborRate: z.coerce.number().min(0).optional().default(0),
+  website: z.string().url("Invalid URL").optional().or(z.literal("")),
+  reviewUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
 })
 
 const userProfileSchema = z.object({
@@ -56,6 +58,8 @@ export async function updateShopProfile(formData: FormData) {
       timezone: parsed.data.timezone || "America/New_York",
       taxRate: parsed.data.taxRate / 100, // store as decimal (e.g. 0.0825)
       laborRate: parsed.data.laborRate,
+      website: parsed.data.website || null,
+      reviewUrl: parsed.data.reviewUrl || null,
     },
   })
 

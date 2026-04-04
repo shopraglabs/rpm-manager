@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Plus, Pencil, Car, FileText, Wrench, Receipt, Clock } from "lucide-react"
+import { ChevronLeft, Plus, Pencil, Car, FileText, Wrench, Receipt, Clock, Printer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { SendSmsDialog } from "@/components/customers/send-sms-dialog"
@@ -104,6 +104,16 @@ export default async function CustomerDetailPage({
           {customer.phone && (
             <SendSmsDialog customerId={customer.id} customerName={customer.firstName} />
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            render={
+              <Link href={`/customers/${customer.id}/statement`} target="_blank" />
+            }
+          >
+            <Printer className="h-4 w-4 mr-2" />
+            Statement
+          </Button>
           <Button variant="outline" render={<Link href={`/customers/${customer.id}/edit`} />}>
             <Pencil className="h-4 w-4 mr-2" />
             Edit

@@ -320,3 +320,37 @@ export async function convertEstimateToWorkOrder(estimateId: string) {
   revalidatePath("/work-orders")
   redirect(`/work-orders/${workOrder.id}`)
 }
+
+/** Append a timestamped internal note to a work order without a full edit */
+export async function addWorkOrderNote(id: string, formData: FormData) {
+  const { tenantId, id: userId } = await requireAuth()
+
+  const text = (formData.get("note") as string)?.trim()
+  if (!text) return { error: "Note cannot be empty" }
+  if (text.length > 2000) return { error: "Note is too long (max 2000 characters)" }
+
+  const [wo, user] = await Promise.all([
+    prisma.workOrder.findFirst({ where: { id, tenantId } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { firstName: true, lastName: true } }),
+  ])
+  if (!wo) return { error: "Work order not found" }
+
+  const timestamp = new Date().toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  })
+  const author = user ? `${user.firstName} ${user.lastName}` : "Unknown"
+  const entry = `[${timestamp} · ${author}] ${text}`
+
+  const updated = wo.internalNotes ? `${wo.internalNotes}\n\n${entry}` : entry
+
+  await prisma.workOrder.update({
+    where: { id },
+    data: { internalNotes: updated },
+  })
+
+  revalidatePath(`/work-orders/${id}`)
+  return { success: true }
+}

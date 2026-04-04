@@ -5,6 +5,7 @@ import { ChevronLeft, Pencil, Printer, FileText, ClipboardList } from "lucide-re
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { StatusTransition, STATUS_LABELS } from "@/components/work-orders/status-transition"
+import { QuickNote } from "@/components/work-orders/quick-note"
 import { getWorkOrder } from "@/modules/work-orders/queries"
 import { getWorkOrderInspection } from "@/modules/inspections/queries"
 import { createInspection } from "@/modules/inspections/actions"
@@ -304,6 +305,9 @@ export default async function WorkOrderDetailPage({
               </form>
             )}
           </div>
+
+          {/* Quick note */}
+          {canEdit && <QuickNote workOrderId={workOrderId} />}
 
           {/* Status history */}
           <div className="rounded-xl border bg-card p-5">

@@ -71,11 +71,23 @@ export default async function NewAppointmentPage({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startTime">Start time *</Label>
-              <Input id="startTime" name="startTime" type="datetime-local" defaultValue={defaultStart} required />
+              <Input
+                id="startTime"
+                name="startTime"
+                type="datetime-local"
+                defaultValue={defaultStart}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="endTime">End time *</Label>
-              <Input id="endTime" name="endTime" type="datetime-local" defaultValue={defaultEnd} required />
+              <Input
+                id="endTime"
+                name="endTime"
+                type="datetime-local"
+                defaultValue={defaultEnd}
+                required
+              />
             </div>
           </div>
 
@@ -97,7 +109,12 @@ export default async function NewAppointmentPage({
 
           <div className="space-y-2">
             <Label htmlFor="description">Notes</Label>
-            <Textarea id="description" name="description" placeholder="Customer concerns, vehicle info…" rows={2} />
+            <Textarea
+              id="description"
+              name="description"
+              placeholder="Customer concerns, vehicle info…"
+              rows={2}
+            />
           </div>
         </div>
 

@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db"
 import { requireAuth } from "@/lib/auth/session"
 import { requirePermission } from "@/lib/auth/permissions"
 import { STANDARD_INSPECTION_TEMPLATE } from "./templates"
+import { emailProvider, inspectionEmail } from "@/lib/integrations/email"
 
 export async function createInspection(workOrderId: string) {
   const { tenantId, id: userId, role } = await requireAuth()
@@ -126,10 +127,18 @@ export async function sendInspectionToCustomer(inspectionId: string) {
 
   const inspection = await prisma.inspection.findFirst({
     where: { id: inspectionId, tenantId },
+    include: {
+      workOrder: {
+        include: {
+          customer: true,
+          vehicle: true,
+        },
+      },
+      items: { select: { condition: true } },
+    },
   })
   if (!inspection) return { error: "Inspection not found" }
 
-  // Generate share token if not already set
   const shareToken = inspection.shareToken ?? crypto.randomUUID()
 
   await prisma.inspection.update({
@@ -141,6 +150,35 @@ export async function sendInspectionToCustomer(inspectionId: string) {
       completedAt: inspection.completedAt ?? new Date(),
     },
   })
+
+  // Send email if customer has an email address
+  const customer = inspection.workOrder.customer
+  if (customer.email) {
+    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } })
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+    const vehicle = inspection.workOrder.vehicle
+    const vehicleLabel = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ")
+    const urgentCount = inspection.items.filter((i) => i.condition === "URGENT").length
+    const poorCount = inspection.items.filter((i) => i.condition === "POOR").length
+
+    const { subject, html } = inspectionEmail({
+      shopName: tenant?.name ?? "Your Auto Shop",
+      shopPhone: tenant?.phone,
+      shopEmail: tenant?.email,
+      customerFirstName: customer.firstName,
+      vehicleLabel: vehicleLabel || "your vehicle",
+      urgentCount,
+      poorCount,
+      portalUrl: `${appUrl}/customer-portal/inspection/${shareToken}`,
+    })
+
+    await emailProvider.send({
+      to: customer.email,
+      subject,
+      html,
+      replyTo: tenant?.email ?? undefined,
+    })
+  }
 
   revalidatePath(`/inspections/${inspectionId}`)
   return { success: true, shareToken }

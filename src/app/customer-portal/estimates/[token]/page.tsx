@@ -68,7 +68,9 @@ export default async function CustomerEstimatePage({
             <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
             <div>
               <p className="font-medium text-green-800">Estimate Approved</p>
-              <p className="text-sm text-green-700">Thank you! We&apos;ll be in touch to schedule your service.</p>
+              <p className="text-sm text-green-700">
+                Thank you! We&apos;ll be in touch to schedule your service.
+              </p>
             </div>
           </div>
         )}
@@ -77,7 +79,9 @@ export default async function CustomerEstimatePage({
             <XCircle className="h-5 w-5 text-red-600 shrink-0" />
             <div>
               <p className="font-medium text-red-800">Estimate Declined</p>
-              <p className="text-sm text-red-700">You&apos;ve declined this estimate. Contact us if you have questions.</p>
+              <p className="text-sm text-red-700">
+                You&apos;ve declined this estimate. Contact us if you have questions.
+              </p>
             </div>
           </div>
         )}
@@ -86,7 +90,9 @@ export default async function CustomerEstimatePage({
         <div className="rounded-xl border bg-card p-5 grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Customer</p>
-            <p className="font-medium">{estimate.customer.firstName} {estimate.customer.lastName}</p>
+            <p className="font-medium">
+              {estimate.customer.firstName} {estimate.customer.lastName}
+            </p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Vehicle</p>
@@ -98,7 +104,9 @@ export default async function CustomerEstimatePage({
           </div>
           {estimate.expiresAt && (
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Valid until</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                Valid until
+              </p>
               <p className="font-medium">
                 {new Date(estimate.expiresAt).toLocaleDateString("en-US", {
                   month: "long",
@@ -118,8 +126,12 @@ export default async function CustomerEstimatePage({
           <table className="w-full text-sm">
             <thead className="bg-muted/30 border-b">
               <tr>
-                <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">Description</th>
-                <th className="text-right px-3 py-2.5 font-medium text-muted-foreground hidden sm:table-cell">Qty</th>
+                <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">
+                  Description
+                </th>
+                <th className="text-right px-3 py-2.5 font-medium text-muted-foreground hidden sm:table-cell">
+                  Qty
+                </th>
                 <th className="text-right px-5 py-2.5 font-medium text-muted-foreground">Total</th>
               </tr>
             </thead>
@@ -153,7 +165,9 @@ export default async function CustomerEstimatePage({
             {estimate.taxAmount.toNumber() > 0 && (
               <div className="flex justify-between max-w-xs ml-auto">
                 <span className="text-muted-foreground">Tax</span>
-                <span className="tabular-nums">{formatCurrency(estimate.taxAmount.toNumber())}</span>
+                <span className="tabular-nums">
+                  {formatCurrency(estimate.taxAmount.toNumber())}
+                </span>
               </div>
             )}
             <div className="flex justify-between max-w-xs ml-auto text-base font-semibold pt-1.5 border-t">
@@ -179,7 +193,13 @@ export default async function CustomerEstimatePage({
               Please review the estimate above and let us know how you&apos;d like to proceed.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <form action={async () => { "use server"; await approveWithToken() }} className="flex-1">
+              <form
+                action={async () => {
+                  "use server"
+                  await approveWithToken()
+                }}
+                className="flex-1"
+              >
                 <button
                   type="submit"
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium rounded-lg px-4 py-3 transition-colors flex items-center justify-center gap-2"
@@ -188,7 +208,13 @@ export default async function CustomerEstimatePage({
                   Approve Estimate
                 </button>
               </form>
-              <form action={async () => { "use server"; await declineWithToken() }} className="flex-1">
+              <form
+                action={async () => {
+                  "use server"
+                  await declineWithToken()
+                }}
+                className="flex-1"
+              >
                 <button
                   type="submit"
                   className="w-full bg-muted text-muted-foreground hover:bg-muted/80 font-medium rounded-lg px-4 py-3 transition-colors flex items-center justify-center gap-2"

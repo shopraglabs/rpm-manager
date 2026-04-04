@@ -47,10 +47,7 @@ export default async function SettingsPage() {
         <section>
           <h2 className="font-medium mb-4">Shop Profile</h2>
           <div className="rounded-xl border bg-card p-6">
-            <EstimateFormShell
-              action={updateShopProfile}
-              submitLabel="Save Shop Settings"
-            >
+            <EstimateFormShell action={updateShopProfile} submitLabel="Save Shop Settings">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Shop name *</Label>
@@ -64,7 +61,12 @@ export default async function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" name="email" type="email" defaultValue={tenant?.email ?? ""} />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      defaultValue={tenant?.email ?? ""}
+                    />
                   </div>
                 </div>
 
@@ -80,7 +82,13 @@ export default async function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="state">State</Label>
-                    <Input id="state" name="state" maxLength={2} placeholder="TX" defaultValue={tenant?.state ?? ""} />
+                    <Input
+                      id="state"
+                      name="state"
+                      maxLength={2}
+                      placeholder="TX"
+                      defaultValue={tenant?.state ?? ""}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="zip">ZIP</Label>
@@ -98,7 +106,9 @@ export default async function SettingsPage() {
                       min="0"
                       max="100"
                       step="0.01"
-                      defaultValue={tenant?.taxRate ? (tenant.taxRate.toNumber() * 100).toFixed(2) : "0"}
+                      defaultValue={
+                        tenant?.taxRate ? (tenant.taxRate.toNumber() * 100).toFixed(2) : "0"
+                      }
                     />
                   </div>
                   <div className="space-y-2">
@@ -123,7 +133,9 @@ export default async function SettingsPage() {
                     className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     {US_TIMEZONES.map((tz) => (
-                      <option key={tz.value} value={tz.value}>{tz.label}</option>
+                      <option key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -137,19 +149,26 @@ export default async function SettingsPage() {
       <section>
         <h2 className="font-medium mb-4">My Profile</h2>
         <div className="rounded-xl border bg-card p-6">
-          <EstimateFormShell
-            action={updateUserProfile}
-            submitLabel="Save Profile"
-          >
+          <EstimateFormShell action={updateUserProfile} submitLabel="Save Profile">
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First name *</Label>
-                  <Input id="firstName" name="firstName" defaultValue={user?.firstName ?? ""} required />
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    defaultValue={user?.firstName ?? ""}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last name *</Label>
-                  <Input id="lastName" name="lastName" defaultValue={user?.lastName ?? ""} required />
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    defaultValue={user?.lastName ?? ""}
+                    required
+                  />
                 </div>
               </div>
               <div className="space-y-2">

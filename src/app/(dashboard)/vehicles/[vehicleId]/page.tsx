@@ -30,7 +30,11 @@ export default async function VehicleDetailPage({
     <div className="max-w-4xl">
       {/* Breadcrumb */}
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="sm" render={<Link href={`/customers/${vehicle.customer.id}`} />}>
+        <Button
+          variant="ghost"
+          size="sm"
+          render={<Link href={`/customers/${vehicle.customer.id}`} />}
+        >
           <ChevronLeft className="h-4 w-4" />
           {vehicle.customer.firstName} {vehicle.customer.lastName}
         </Button>
@@ -49,7 +53,13 @@ export default async function VehicleDetailPage({
             <Pencil className="h-4 w-4 mr-2" />
             Edit
           </Button>
-          <Button render={<Link href={`/estimates/new?vehicleId=${vehicle.id}&customerId=${vehicle.customer.id}`} />}>
+          <Button
+            render={
+              <Link
+                href={`/estimates/new?vehicleId=${vehicle.id}&customerId=${vehicle.customer.id}`}
+              />
+            }
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Estimate
           </Button>
@@ -92,7 +102,9 @@ export default async function VehicleDetailPage({
           <div>
             <dt className="text-muted-foreground">Transmission</dt>
             <dd className="font-medium mt-0.5">
-              {vehicle.transmission ? TRANSMISSION_LABELS[vehicle.transmission] ?? vehicle.transmission : "—"}
+              {vehicle.transmission
+                ? (TRANSMISSION_LABELS[vehicle.transmission] ?? vehicle.transmission)
+                : "—"}
             </dd>
           </div>
           <div>
@@ -141,8 +153,12 @@ export default async function VehicleDetailPage({
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium tabular-nums">{formatCurrency(wo.total.toNumber())}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{wo.status.toLowerCase().replace(/_/g, " ")}</p>
+                      <p className="font-medium tabular-nums">
+                        {formatCurrency(wo.total.toNumber())}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {wo.status.toLowerCase().replace(/_/g, " ")}
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -168,8 +184,12 @@ export default async function VehicleDetailPage({
                       <p className="text-xs text-muted-foreground">{formatDate(est.createdAt)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium tabular-nums">{formatCurrency(est.total.toNumber())}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{est.status.toLowerCase()}</p>
+                      <p className="font-medium tabular-nums">
+                        {formatCurrency(est.total.toNumber())}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {est.status.toLowerCase()}
+                      </p>
                     </div>
                   </Link>
                 ))}

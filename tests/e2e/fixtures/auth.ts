@@ -26,8 +26,12 @@ export const authenticatedTest = base.extend<{ authedPage: Page }>({
   authedPage: async ({ page }, use, testInfo) => {
     const loggedIn = await loginIfCredentials(page)
     if (!loggedIn) {
-      testInfo.skip(true, "Set PLAYWRIGHT_TEST_EMAIL and PLAYWRIGHT_TEST_PASSWORD to run authenticated tests")
+      testInfo.skip(
+        true,
+        "Set PLAYWRIGHT_TEST_EMAIL and PLAYWRIGHT_TEST_PASSWORD to run authenticated tests"
+      )
     }
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(page)
   },
 })

@@ -9,6 +9,8 @@ import { invoiceSchema, recordPaymentSchema } from "./schemas"
 import { calculateTotals, parseLineItemsFromFormData } from "@/modules/estimates/utils"
 import { generateInvoiceNumber, generateShareToken } from "@/lib/utils/sequence"
 import type { PaymentMethod } from "@/generated/prisma/enums"
+import { emailProvider, invoiceEmail } from "@/lib/integrations/email"
+import { formatCurrency, formatDate } from "@/lib/utils/format"
 
 export async function createInvoice(formData: FormData) {
   const { tenantId, role } = await requireAuth()
@@ -79,7 +81,10 @@ export async function sendInvoice(id: string) {
   const { tenantId, role } = await requireAuth()
   requirePermission(role, "invoices:send")
 
-  const existing = await prisma.invoice.findFirst({ where: { id, tenantId } })
+  const existing = await prisma.invoice.findFirst({
+    where: { id, tenantId },
+    include: { customer: true },
+  })
   if (!existing) return { error: "Invoice not found" }
   if (existing.status === "VOID") return { error: "Cannot send a voided invoice" }
 
@@ -89,6 +94,31 @@ export async function sendInvoice(id: string) {
     where: { id },
     data: { status: "SENT", sentAt: new Date(), shareToken },
   })
+
+  // Send email if customer has an email address
+  if (existing.customer.email) {
+    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } })
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+
+    const { subject, html } = invoiceEmail({
+      shopName: tenant?.name ?? "Your Auto Shop",
+      shopPhone: tenant?.phone,
+      shopEmail: tenant?.email,
+      customerFirstName: existing.customer.firstName,
+      invoiceNumber: existing.invoiceNumber,
+      total: formatCurrency(existing.total.toNumber()),
+      amountDue: formatCurrency(existing.amountDue.toNumber()),
+      dueDate: existing.dueDate ? formatDate(existing.dueDate) : null,
+      portalUrl: `${appUrl}/customer-portal/invoices/${shareToken}`,
+    })
+
+    await emailProvider.send({
+      to: existing.customer.email,
+      subject,
+      html,
+      replyTo: tenant?.email ?? undefined,
+    })
+  }
 
   revalidatePath(`/invoices/${id}`)
   return { shareToken }
@@ -115,16 +145,14 @@ export async function recordPayment(invoiceId: string, formData: FormData) {
   const newAmountPaid = parseFloat((currentPaid + amount).toFixed(2))
 
   if (newAmountPaid > total) {
-    return { error: `Payment of ${amount} exceeds the remaining balance of ${(total - currentPaid).toFixed(2)}` }
+    return {
+      error: `Payment of ${amount} exceeds the remaining balance of ${(total - currentPaid).toFixed(2)}`,
+    }
   }
 
   const newAmountDue = parseFloat((total - newAmountPaid).toFixed(2))
   const newStatus =
-    newAmountDue <= 0
-      ? "PAID"
-      : newAmountPaid > 0
-      ? "PARTIALLY_PAID"
-      : existing.status
+    newAmountDue <= 0 ? "PAID" : newAmountPaid > 0 ? "PARTIALLY_PAID" : existing.status
 
   await prisma.$transaction([
     prisma.payment.create({

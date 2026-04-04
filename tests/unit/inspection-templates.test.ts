@@ -36,16 +36,12 @@ describe("STANDARD_INSPECTION_TEMPLATE", () => {
   })
 
   it("has 6 items in Brakes", () => {
-    const count = STANDARD_INSPECTION_TEMPLATE.filter(
-      (i) => i.category === "Brakes"
-    ).length
+    const count = STANDARD_INSPECTION_TEMPLATE.filter((i) => i.category === "Brakes").length
     expect(count).toBe(6)
   })
 
   it("has 6 items in Tires & Wheels", () => {
-    const count = STANDARD_INSPECTION_TEMPLATE.filter(
-      (i) => i.category === "Tires & Wheels"
-    ).length
+    const count = STANDARD_INSPECTION_TEMPLATE.filter((i) => i.category === "Tires & Wheels").length
     expect(count).toBe(6)
   })
 
@@ -64,9 +60,7 @@ describe("STANDARD_INSPECTION_TEMPLATE", () => {
   })
 
   it("has 5 items in Under Vehicle", () => {
-    const count = STANDARD_INSPECTION_TEMPLATE.filter(
-      (i) => i.category === "Under Vehicle"
-    ).length
+    const count = STANDARD_INSPECTION_TEMPLATE.filter((i) => i.category === "Under Vehicle").length
     expect(count).toBe(5)
   })
 

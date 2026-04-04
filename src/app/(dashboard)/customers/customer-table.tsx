@@ -88,7 +88,9 @@ export function CustomerTable({
             {data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                  {search ? "No customers match your search." : "No customers yet. Add your first customer."}
+                  {search
+                    ? "No customers match your search."
+                    : "No customers yet. Add your first customer."}
                 </TableCell>
               </TableRow>
             ) : (
@@ -110,9 +112,7 @@ export function CustomerTable({
                   <TableCell className="text-muted-foreground">
                     {formatPhone(customer.phone)}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {customer.email ?? "—"}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{customer.email ?? "—"}</TableCell>
                   <TableCell>
                     <span className="flex items-center gap-1.5 text-muted-foreground">
                       <Car className="h-3.5 w-3.5" />

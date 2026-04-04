@@ -28,10 +28,7 @@ export default async function EditWorkOrderPage({
 }) {
   const { workOrderId } = await params
   const { tenantId } = await requireAuth()
-  const [wo, technicians] = await Promise.all([
-    getWorkOrder(workOrderId),
-    getTechnicians(tenantId),
-  ])
+  const [wo, technicians] = await Promise.all([getWorkOrder(workOrderId), getTechnicians(tenantId)])
 
   if (!wo) notFound()
   if (["DELIVERED", "CANCELLED"].includes(wo.status)) {
@@ -54,7 +51,8 @@ export default async function EditWorkOrderPage({
         <h1 className="text-2xl font-semibold tracking-tight">Edit Work Order</h1>
         <p className="text-muted-foreground text-sm mt-0.5">
           {wo.customer.firstName} {wo.customer.lastName} ·{" "}
-          {wo.vehicle.year ? `${wo.vehicle.year} ` : ""}{wo.vehicle.make} {wo.vehicle.model}
+          {wo.vehicle.year ? `${wo.vehicle.year} ` : ""}
+          {wo.vehicle.make} {wo.vehicle.model}
         </p>
       </div>
 
@@ -62,15 +60,26 @@ export default async function EditWorkOrderPage({
         action={updateWithId}
         submitLabel="Save Changes"
         cancelSlot={
-          <Button type="button" variant="outline" render={<Link href={`/work-orders/${workOrderId}`} />}>
+          <Button
+            type="button"
+            variant="outline"
+            render={<Link href={`/work-orders/${workOrderId}`} />}
+          >
             Cancel
           </Button>
         }
         deleteSlot={
-          <form action={async () => { await deleteWithId() }} onSubmit={(e) => {
-            if (!confirm("Delete this work order? This cannot be undone.")) e.preventDefault()
-          }}>
-            <Button type="submit" variant="destructive" size="sm">Delete</Button>
+          <form
+            action={async () => {
+              await deleteWithId()
+            }}
+            onSubmit={(e) => {
+              if (!confirm("Delete this work order? This cannot be undone.")) e.preventDefault()
+            }}
+          >
+            <Button type="submit" variant="destructive" size="sm">
+              Delete
+            </Button>
           </form>
         }
       >
@@ -85,7 +94,9 @@ export default async function EditWorkOrderPage({
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
               <Select name="priority" defaultValue={wo.priority}>
-                <SelectTrigger id="priority"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="priority">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="LOW">Low</SelectItem>
                   <SelectItem value="NORMAL">Normal</SelectItem>
@@ -129,9 +140,7 @@ export default async function EditWorkOrderPage({
                 name="promisedDate"
                 type="date"
                 defaultValue={
-                  wo.promisedDate
-                    ? new Date(wo.promisedDate).toISOString().split("T")[0]
-                    : ""
+                  wo.promisedDate ? new Date(wo.promisedDate).toISOString().split("T")[0] : ""
                 }
               />
             </div>
@@ -163,7 +172,12 @@ export default async function EditWorkOrderPage({
           </div>
           <div className="space-y-2">
             <Label htmlFor="internalNotes">Internal notes</Label>
-            <Textarea id="internalNotes" name="internalNotes" defaultValue={wo.internalNotes ?? ""} rows={2} />
+            <Textarea
+              id="internalNotes"
+              name="internalNotes"
+              defaultValue={wo.internalNotes ?? ""}
+              rows={2}
+            />
           </div>
         </div>
       </EstimateFormShell>

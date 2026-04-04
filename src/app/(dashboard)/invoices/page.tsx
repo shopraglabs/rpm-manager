@@ -62,7 +62,12 @@ export default async function InvoicesPage({
       {result.items.length === 0 ? (
         <div className="rounded-xl border bg-card p-12 text-center">
           <p className="text-muted-foreground text-sm">No invoices yet.</p>
-          <Button variant="outline" size="sm" className="mt-4" render={<Link href="/invoices/new" />}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4"
+            render={<Link href="/invoices/new" />}
+          >
             Create first invoice
           </Button>
         </div>
@@ -75,8 +80,12 @@ export default async function InvoicesPage({
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Customer</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">Total</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Balance</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Date</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">
+                  Balance
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
+                  Date
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">

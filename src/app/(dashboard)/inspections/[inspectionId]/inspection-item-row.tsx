@@ -86,7 +86,9 @@ export function InspectionItemRow({ item, readOnly = false }: InspectionItemRowP
 
         {/* Read-only badge */}
         {readOnly && (
-          <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}>
+          <span
+            className={`px-2.5 py-1 rounded-md text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
+          >
             {CONDITION_LABELS[condition] ?? condition}
           </span>
         )}

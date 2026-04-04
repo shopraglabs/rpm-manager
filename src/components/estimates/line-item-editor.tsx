@@ -92,14 +92,9 @@ export function LineItemEditor({ defaultItems, taxRate = 0 }: Props) {
     setItems((prev) => prev.filter((item) => item.id !== id))
   }, [])
 
-  const updateItem = useCallback(
-    (id: string, field: keyof LineItem, value: string) => {
-      setItems((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-      )
-    },
-    []
-  )
+  const updateItem = useCallback((id: string, field: keyof LineItem, value: string) => {
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)))
+  }, [])
 
   const subtotal = items.reduce((sum, item) => sum + lineTotal(item), 0)
   const clampedSubtotal = Math.max(0, subtotal)
@@ -139,7 +134,9 @@ export function LineItemEditor({ defaultItems, taxRate = 0 }: Props) {
                   name={`lineItems[${idx}][description]`}
                   value={item.description}
                   onChange={(e) => updateItem(item.id, "description", e.target.value)}
-                  placeholder={item.type === "LABOR" ? "Describe the labor…" : "Part or service name…"}
+                  placeholder={
+                    item.type === "LABOR" ? "Describe the labor…" : "Part or service name…"
+                  }
                   required
                   className="h-9"
                 />
@@ -232,7 +229,9 @@ export function LineItemEditor({ defaultItems, taxRate = 0 }: Props) {
                 )}
                 {item.type === "PART" && (
                   <div className="flex items-center gap-2">
-                    <label className="text-xs text-muted-foreground whitespace-nowrap">Part #</label>
+                    <label className="text-xs text-muted-foreground whitespace-nowrap">
+                      Part #
+                    </label>
                     <Input
                       name={`lineItems[${idx}][partNumber]`}
                       value={item.partNumber}

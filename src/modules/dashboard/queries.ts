@@ -106,9 +106,7 @@ export async function getDashboardStats() {
   const overdueTotal = overdueInvoices._sum.amountDue?.toNumber() ?? 0
 
   const monthGrowth =
-    revenueLastMonth > 0
-      ? ((revenueMonth - revenueLastMonth) / revenueLastMonth) * 100
-      : null
+    revenueLastMonth > 0 ? ((revenueMonth - revenueLastMonth) / revenueLastMonth) * 100 : null
 
   return {
     openWorkOrders,

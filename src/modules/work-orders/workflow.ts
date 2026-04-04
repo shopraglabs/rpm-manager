@@ -20,20 +20,14 @@ export const VALID_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
 /**
  * Returns true if moving from `from` to `to` is a valid transition.
  */
-export function isValidTransition(
-  from: WorkOrderStatus,
-  to: WorkOrderStatus
-): boolean {
+export function isValidTransition(from: WorkOrderStatus, to: WorkOrderStatus): boolean {
   return VALID_TRANSITIONS[from]?.includes(to) ?? false
 }
 
 /**
  * Throws if the transition is not allowed.
  */
-export function assertValidTransition(
-  from: WorkOrderStatus,
-  to: WorkOrderStatus
-): void {
+export function assertValidTransition(from: WorkOrderStatus, to: WorkOrderStatus): void {
   if (!isValidTransition(from, to)) {
     throw new Error(
       `Invalid status transition: ${from} → ${to}. Allowed: [${VALID_TRANSITIONS[from]?.join(", ") ?? "none"}]`

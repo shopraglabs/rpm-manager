@@ -1,5 +1,5 @@
-import { authenticatedTest as test, loginIfCredentials } from "./fixtures/auth"
-import { test as base, expect } from "@playwright/test"
+import { authenticatedTest as test } from "./fixtures/auth"
+import { expect } from "@playwright/test"
 
 /**
  * These tests require PLAYWRIGHT_TEST_EMAIL and PLAYWRIGHT_TEST_PASSWORD.

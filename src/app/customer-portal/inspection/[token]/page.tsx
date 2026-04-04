@@ -43,11 +43,7 @@ export default async function CustomerInspectionPage({
     {} as Record<string, number>
   )
 
-  const vehicleLabel = [
-    inspection.vehicle.year,
-    inspection.vehicle.make,
-    inspection.vehicle.model,
-  ]
+  const vehicleLabel = [inspection.vehicle.year, inspection.vehicle.make, inspection.vehicle.model]
     .filter(Boolean)
     .join(" ")
 
@@ -72,7 +68,9 @@ export default async function CustomerInspectionPage({
           <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Vehicle</p>
           <p className="font-semibold text-lg">{vehicleLabel || "Unknown vehicle"}</p>
           {inspection.vehicle.licensePlate && (
-            <p className="text-sm text-muted-foreground font-mono">{inspection.vehicle.licensePlate}</p>
+            <p className="text-sm text-muted-foreground font-mono">
+              {inspection.vehicle.licensePlate}
+            </p>
           )}
         </div>
 
@@ -96,23 +94,33 @@ export default async function CustomerInspectionPage({
 
         {/* Legend */}
         <div className="rounded-xl border bg-card p-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">Condition Guide</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">
+            Condition Guide
+          </p>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-green-500 shrink-0" />
-              <span><strong>Good</strong> — No action needed</span>
+              <span>
+                <strong>Good</strong> — No action needed
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-yellow-500 shrink-0" />
-              <span><strong>Fair</strong> — Monitor, service soon</span>
+              <span>
+                <strong>Fair</strong> — Monitor, service soon
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-orange-500 shrink-0" />
-              <span><strong>Poor</strong> — Service recommended</span>
+              <span>
+                <strong>Poor</strong> — Service recommended
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-red-500 shrink-0" />
-              <span><strong>Urgent</strong> — Immediate attention</span>
+              <span>
+                <strong>Urgent</strong> — Immediate attention
+              </span>
             </div>
           </div>
         </div>
@@ -130,7 +138,9 @@ export default async function CustomerInspectionPage({
                   <div key={item.id} className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <span className="flex-1 text-sm">{item.name}</span>
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-medium border shrink-0 ${colors.bg} ${colors.text} ${colors.border}`}>
+                      <span
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium border shrink-0 ${colors.bg} ${colors.text} ${colors.border}`}
+                      >
                         {CONDITION_LABELS[item.condition] ?? item.condition}
                       </span>
                     </div>
@@ -147,7 +157,9 @@ export default async function CustomerInspectionPage({
         {/* Overall notes */}
         {inspection.notes && (
           <div className="rounded-xl border bg-card p-5">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Technician Notes</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
+              Technician Notes
+            </p>
             <p className="text-sm whitespace-pre-wrap">{inspection.notes}</p>
           </div>
         )}

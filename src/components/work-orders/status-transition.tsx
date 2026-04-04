@@ -62,9 +62,7 @@ export function StatusTransition({
     <div className="rounded-xl border bg-card p-5">
       <h3 className="font-medium text-sm mb-3">Update Status</h3>
 
-      {state?.error && (
-        <p className="text-sm text-destructive mb-3">{state.error}</p>
-      )}
+      {state?.error && <p className="text-sm text-destructive mb-3">{state.error}</p>}
 
       <form action={formAction} className="space-y-3">
         {/* Hidden input carries the selected value */}

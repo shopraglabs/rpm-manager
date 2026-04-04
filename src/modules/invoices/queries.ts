@@ -46,7 +46,13 @@ export async function getInvoice(id: string) {
     where: { id, tenantId },
     include: {
       customer: true,
-      workOrder: { select: { id: true, orderNumber: true, vehicle: { select: { year: true, make: true, model: true } } } },
+      workOrder: {
+        select: {
+          id: true,
+          orderNumber: true,
+          vehicle: { select: { year: true, make: true, model: true } },
+        },
+      },
       lineItems: { orderBy: { sortOrder: "asc" } },
       payments: { orderBy: { createdAt: "desc" } },
     },

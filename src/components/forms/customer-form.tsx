@@ -149,12 +149,7 @@ export function CustomerForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="zip">ZIP</Label>
-          <Input
-            id="zip"
-            name="zip"
-            defaultValue={defaultValues?.zip ?? ""}
-            placeholder="62701"
-          />
+          <Input id="zip" name="zip" defaultValue={defaultValues?.zip ?? ""} placeholder="62701" />
         </div>
       </div>
 
@@ -174,7 +169,9 @@ export function CustomerForm({
       <div className="flex items-center justify-between pt-2">
         {deleteAction ? (
           <form
-            action={async (fd) => { await deleteAction(fd) }}
+            action={async (fd) => {
+              await deleteAction(fd)
+            }}
             onSubmit={(e) => {
               if (!confirm("Delete this customer? This cannot be undone.")) {
                 e.preventDefault()

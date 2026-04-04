@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#1d4ed8"/>
+  <!-- Wrench icon, centered and scaled -->
+  <g transform="translate(256,256)" fill="none" stroke="white" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Wrench body -->
+    <path d="M-80,-120 C-120,-120 -150,-90 -150,-50 C-150,-10 -120,20 -80,20 C-60,20 -42,12 -30,0 L80,110 C94,124 116,124 130,110 C144,96 144,74 130,60 L20,-50 C20,-50 20,-50 20,-50 C32,-62 40,-80 40,-100 C40,-140 10,-170 -30,-170 C-55,-170 -70,-160 -80,-150 L-50,-120 L-80,-90 L-110,-120 Z" stroke-width="0" fill="white"/>
+    <!-- Simplified: use a gear+wrench combo -->
+  </g>
+  <!-- RPM text -->
+  <text x="256" y="300" font-family="system-ui, -apple-system, sans-serif" font-size="96" font-weight="800" fill="white" text-anchor="middle" letter-spacing="-2">RPM</text>
+  <!-- Wrench simplified shape -->
+  <path d="M155 165 C130 140 130 100 155 75 C165 65 178 60 192 60 L192 85 L175 100 L192 115 L192 140 C178 140 165 135 155 125 Z" fill="white"/>
+  <path d="M192 115 L310 233 C318 241 318 254 310 262 C302 270 289 270 281 262 L163 144 Z" fill="white"/>
+  <circle cx="295.5" cy="247.5" r="14" fill="#1d4ed8"/>
+</svg>

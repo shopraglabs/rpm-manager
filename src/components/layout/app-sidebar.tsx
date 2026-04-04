@@ -11,6 +11,7 @@ import {
   CalendarDays,
   Package,
   Receipt,
+  BarChart2,
   Settings,
   LogOut,
 } from "lucide-react"
@@ -40,6 +41,7 @@ const NAV_ITEMS = [
   { label: "Appointments", href: "/appointments", icon: CalendarDays },
   { label: "Inventory", href: "/inventory", icon: Package },
   { label: "Invoices", href: "/invoices", icon: Receipt },
+  { label: "Reports", href: "/reports", icon: BarChart2 },
 ]
 
 function NavItem({
@@ -52,8 +54,7 @@ function NavItem({
   label: string
 }) {
   const pathname = usePathname()
-  const isActive =
-    href === "/" ? pathname === "/" : pathname.startsWith(href)
+  const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href)
 
   return (
     <SidebarMenuItem>

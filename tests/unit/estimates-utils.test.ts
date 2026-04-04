@@ -21,9 +21,7 @@ describe("calculateTotals", () => {
   })
 
   it("handles quantity > 1 correctly", () => {
-    const items = [
-      { type: "PART" as const, description: "Spark plug", quantity: 4, unitPrice: 8 },
-    ]
+    const items = [{ type: "PART" as const, description: "Spark plug", quantity: 4, unitPrice: 8 }]
     const result = calculateTotals(items)
     expect(result.subtotal).toBe(32)
   })
@@ -59,9 +57,7 @@ describe("calculateTotals", () => {
   })
 
   it("applies tax rate as a percentage", () => {
-    const items = [
-      { type: "LABOR" as const, description: "Tune up", quantity: 1, unitPrice: 100 },
-    ]
+    const items = [{ type: "LABOR" as const, description: "Tune up", quantity: 1, unitPrice: 100 }]
     const result = calculateTotals(items, 10) // 10%
     expect(result.subtotal).toBe(100)
     expect(result.taxAmount).toBe(10)
@@ -80,9 +76,7 @@ describe("calculateTotals", () => {
   })
 
   it("rounds tax and total to 2 decimal places", () => {
-    const items = [
-      { type: "LABOR" as const, description: "Labor", quantity: 1, unitPrice: 49.99 },
-    ]
+    const items = [{ type: "LABOR" as const, description: "Labor", quantity: 1, unitPrice: 49.99 }]
     const result = calculateTotals(items, 7.5)
     // 49.99 * 0.075 = 3.74925 → 3.75
     expect(result.taxAmount).toBe(3.75)
@@ -99,9 +93,7 @@ describe("calculateTotals", () => {
   })
 
   it("handles zero-priced items without error", () => {
-    const items = [
-      { type: "LABOR" as const, description: "Inspection", quantity: 1, unitPrice: 0 },
-    ]
+    const items = [{ type: "LABOR" as const, description: "Inspection", quantity: 1, unitPrice: 0 }]
     const result = calculateTotals(items)
     expect(result).toEqual({ subtotal: 0, taxAmount: 0, total: 0 })
   })

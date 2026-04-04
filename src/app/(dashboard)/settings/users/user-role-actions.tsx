@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/select"
 import { inviteUser, updateUserRole, deactivateUser } from "@/modules/settings/actions"
 
-function SubmitButton({ label, variant = "default", size = "default" }: {
+function SubmitButton({
+  label,
+  variant = "default",
+  size = "default",
+}: {
   label: string
   variant?: "default" | "outline" | "destructive"
   size?: "default" | "sm"
@@ -30,7 +34,10 @@ function SubmitButton({ label, variant = "default", size = "default" }: {
 // ---- Invite mode ----
 function InviteForm() {
   const [state, formAction] = useActionState(
-    async (_prev: { error?: string; success?: boolean; message?: string } | null, formData: FormData) => {
+    async (
+      _prev: { error?: string; success?: boolean; message?: string } | null,
+      formData: FormData
+    ) => {
       const result = await inviteUser(formData)
       return result
     },
@@ -44,22 +51,30 @@ function InviteForm() {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="firstName" className="text-xs">First name</Label>
+          <Label htmlFor="firstName" className="text-xs">
+            First name
+          </Label>
           <Input id="firstName" name="firstName" className="h-8" required />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="lastName" className="text-xs">Last name</Label>
+          <Label htmlFor="lastName" className="text-xs">
+            Last name
+          </Label>
           <Input id="lastName" name="lastName" className="h-8" required />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="inviteEmail" className="text-xs">Email</Label>
+          <Label htmlFor="inviteEmail" className="text-xs">
+            Email
+          </Label>
           <Input id="inviteEmail" name="email" type="email" className="h-8" required />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="role" className="text-xs">Role</Label>
+          <Label htmlFor="role" className="text-xs">
+            Role
+          </Label>
           <Select name="role" defaultValue="TECHNICIAN">
             <SelectTrigger id="role" className="h-8">
               <SelectValue />
@@ -79,7 +94,11 @@ function InviteForm() {
 }
 
 // ---- Manage mode ----
-function ManageForm({ userId, currentRole, isActive }: {
+function ManageForm({
+  userId,
+  currentRole,
+  isActive,
+}: {
   userId: string
   currentRole: string
   isActive: boolean
@@ -114,7 +133,9 @@ function ManageForm({ userId, currentRole, isActive }: {
 
       {isActive && (
         <form
-          action={async () => { await deactivateUser(userId) }}
+          action={async () => {
+            await deactivateUser(userId)
+          }}
           onSubmit={(e) => {
             if (!confirm("Deactivate this user?")) e.preventDefault()
           }}
@@ -135,10 +156,6 @@ export function UserRoleActions(
 ) {
   if (props.mode === "invite") return <InviteForm />
   return (
-    <ManageForm
-      userId={props.userId}
-      currentRole={props.currentRole}
-      isActive={props.isActive}
-    />
+    <ManageForm userId={props.userId} currentRole={props.currentRole} isActive={props.isActive} />
   )
 }

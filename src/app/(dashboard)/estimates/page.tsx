@@ -58,13 +58,21 @@ export default async function EstimatesPage({
       </div>
 
       <div className="mb-4">
-        <SearchBar placeholder="Search by customer, vehicle, estimate #…" initialValue={search ?? ""} />
+        <SearchBar
+          placeholder="Search by customer, vehicle, estimate #…"
+          initialValue={search ?? ""}
+        />
       </div>
 
       {result.items.length === 0 ? (
         <div className="rounded-xl border bg-card p-12 text-center">
           <p className="text-muted-foreground text-sm">No estimates yet.</p>
-          <Button variant="outline" size="sm" className="mt-4" render={<Link href="/estimates/new" />}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4"
+            render={<Link href="/estimates/new" />}
+          >
             Create first estimate
           </Button>
         </div>
@@ -75,18 +83,19 @@ export default async function EstimatesPage({
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Number</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Customer</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Vehicle</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">
+                  Vehicle
+                </th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">Total</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Date</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
+                  Date
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {result.items.map((est) => (
-                <tr
-                  key={est.id}
-                  className="hover:bg-muted/30 transition-colors"
-                >
+                <tr key={est.id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3 font-mono font-medium">
                     <Link href={`/estimates/${est.id}`} className="hover:underline">
                       {est.estimateNumber}
@@ -98,13 +107,11 @@ export default async function EstimatesPage({
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
-                    {est.vehicle.year ? `${est.vehicle.year} ` : ""}{est.vehicle.make} {est.vehicle.model}
+                    {est.vehicle.year ? `${est.vehicle.year} ` : ""}
+                    {est.vehicle.make} {est.vehicle.model}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge
-                      variant="outline"
-                      className={STATUS_COLORS[est.status] ?? ""}
-                    >
+                    <Badge variant="outline" className={STATUS_COLORS[est.status] ?? ""}>
                       {STATUS_LABELS[est.status] ?? est.status}
                     </Badge>
                   </td>

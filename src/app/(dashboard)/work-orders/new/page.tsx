@@ -27,7 +27,11 @@ export default async function NewWorkOrderPage({
 }: {
   searchParams: Promise<{ customerId?: string; vehicleId?: string; estimateId?: string }>
 }) {
-  const { customerId: defaultCustomerId, vehicleId: defaultVehicleId, estimateId } = await searchParams
+  const {
+    customerId: defaultCustomerId,
+    vehicleId: defaultVehicleId,
+    estimateId,
+  } = await searchParams
   const { tenantId } = await requireAuth()
 
   const [customers, technicians] = await Promise.all([
@@ -47,9 +51,7 @@ export default async function NewWorkOrderPage({
     getTechnicians(tenantId),
   ])
 
-  const customerVehicles = Object.fromEntries(
-    customers.map((c) => [c.id, c.vehicles])
-  )
+  const customerVehicles = Object.fromEntries(customers.map((c) => [c.id, c.vehicles]))
 
   return (
     <div className="max-w-4xl">
@@ -124,22 +126,12 @@ export default async function NewWorkOrderPage({
 
             <div className="space-y-2">
               <Label htmlFor="mileageIn">Mileage in</Label>
-              <Input
-                id="mileageIn"
-                name="mileageIn"
-                type="number"
-                min={0}
-                placeholder="0"
-              />
+              <Input id="mileageIn" name="mileageIn" type="number" min={0} placeholder="0" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="promisedDate">Promised date</Label>
-              <Input
-                id="promisedDate"
-                name="promisedDate"
-                type="date"
-              />
+              <Input id="promisedDate" name="promisedDate" type="date" />
             </div>
           </div>
         </div>
@@ -155,11 +147,21 @@ export default async function NewWorkOrderPage({
           <h2 className="font-medium">Notes</h2>
           <div className="space-y-2">
             <Label htmlFor="notes">Customer-visible notes</Label>
-            <Textarea id="notes" name="notes" placeholder="Notes visible to the customer…" rows={2} />
+            <Textarea
+              id="notes"
+              name="notes"
+              placeholder="Notes visible to the customer…"
+              rows={2}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="internalNotes">Internal notes</Label>
-            <Textarea id="internalNotes" name="internalNotes" placeholder="Internal shop notes…" rows={2} />
+            <Textarea
+              id="internalNotes"
+              name="internalNotes"
+              placeholder="Internal shop notes…"
+              rows={2}
+            />
           </div>
         </div>
       </EstimateFormShell>

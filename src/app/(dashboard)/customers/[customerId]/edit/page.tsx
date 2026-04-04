@@ -35,11 +35,7 @@ export default async function EditCustomerPage({
       </div>
 
       <div className="rounded-xl border bg-card p-6">
-        <CustomerForm
-          action={updateWithId}
-          defaultValues={customer}
-          deleteAction={deleteWithId}
-        />
+        <CustomerForm action={updateWithId} defaultValues={customer} deleteAction={deleteWithId} />
       </div>
     </div>
   )

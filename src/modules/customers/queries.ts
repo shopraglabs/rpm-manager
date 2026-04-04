@@ -2,11 +2,7 @@ import { prisma } from "@/lib/db"
 import { requireAuth } from "@/lib/auth/session"
 import { PAGINATION_PAGE_SIZE } from "@/lib/utils/constants"
 
-export async function getCustomers(params: {
-  page?: number
-  pageSize?: number
-  search?: string
-}) {
+export async function getCustomers(params: { page?: number; pageSize?: number; search?: string }) {
   const { tenantId } = await requireAuth()
   const { page = 1, pageSize = PAGINATION_PAGE_SIZE, search } = params
 

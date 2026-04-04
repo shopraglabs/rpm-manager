@@ -19,7 +19,10 @@ export type SessionUser = {
  */
 export async function getSession(): Promise<SessionUser | null> {
   const supabase = await createServerClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
 
   if (error || !user) return null
 

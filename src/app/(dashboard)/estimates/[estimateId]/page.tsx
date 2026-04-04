@@ -76,12 +76,17 @@ export default async function EstimateDetailPage({
           </div>
           <p className="text-muted-foreground text-sm mt-1">
             {estimate.customer.firstName} {estimate.customer.lastName} ·{" "}
-            {estimate.vehicle.year ? `${estimate.vehicle.year} ` : ""}{estimate.vehicle.make} {estimate.vehicle.model}
+            {estimate.vehicle.year ? `${estimate.vehicle.year} ` : ""}
+            {estimate.vehicle.make} {estimate.vehicle.model}
           </p>
         </div>
         <div className="flex gap-2">
           {canSend && (
-            <form action={async () => { await sendWithId() }}>
+            <form
+              action={async () => {
+                await sendWithId()
+              }}
+            >
               <Button type="submit" variant="outline">
                 <Send className="h-4 w-4 mr-2" />
                 Send to Customer
@@ -89,7 +94,14 @@ export default async function EstimateDetailPage({
             </form>
           )}
           {canConvert && (
-            <Button variant="outline" render={<Link href={`/work-orders/new?estimateId=${estimateId}&customerId=${estimate.customerId}&vehicleId=${estimate.vehicleId}`} />}>
+            <Button
+              variant="outline"
+              render={
+                <Link
+                  href={`/work-orders/new?estimateId=${estimateId}&customerId=${estimate.customerId}&vehicleId=${estimate.vehicleId}`}
+                />
+              }
+            >
               <Wrench className="h-4 w-4 mr-2" />
               Convert to Work Order
             </Button>
@@ -118,7 +130,8 @@ export default async function EstimateDetailPage({
             <p className="text-muted-foreground">Vehicle</p>
             <p className="font-medium mt-0.5">
               <Link href={`/vehicles/${estimate.vehicle.id}`} className="hover:underline">
-                {estimate.vehicle.year ? `${estimate.vehicle.year} ` : ""}{estimate.vehicle.make} {estimate.vehicle.model}
+                {estimate.vehicle.year ? `${estimate.vehicle.year} ` : ""}
+                {estimate.vehicle.make} {estimate.vehicle.model}
               </Link>
             </p>
           </div>
@@ -142,10 +155,16 @@ export default async function EstimateDetailPage({
           <table className="w-full text-sm">
             <thead className="bg-muted/40 border-b">
               <tr>
-                <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">Description</th>
-                <th className="text-left px-3 py-2.5 font-medium text-muted-foreground hidden md:table-cell">Type</th>
+                <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">
+                  Description
+                </th>
+                <th className="text-left px-3 py-2.5 font-medium text-muted-foreground hidden md:table-cell">
+                  Type
+                </th>
                 <th className="text-right px-3 py-2.5 font-medium text-muted-foreground">Qty</th>
-                <th className="text-right px-3 py-2.5 font-medium text-muted-foreground">Unit price</th>
+                <th className="text-right px-3 py-2.5 font-medium text-muted-foreground">
+                  Unit price
+                </th>
                 <th className="text-right px-5 py-2.5 font-medium text-muted-foreground">Total</th>
               </tr>
             </thead>
@@ -161,18 +180,20 @@ export default async function EstimateDetailPage({
                   <td className="px-3 py-3 text-muted-foreground hidden md:table-cell">
                     {LINE_ITEM_TYPE_LABELS[item.type] ?? item.type}
                   </td>
-                  <td className="px-3 py-3 text-right tabular-nums">
-                    {item.quantity.toString()}
-                  </td>
+                  <td className="px-3 py-3 text-right tabular-nums">{item.quantity.toString()}</td>
                   <td className="px-3 py-3 text-right tabular-nums">
                     {item.type === "DISCOUNT"
                       ? `-${formatCurrency(item.unitPrice.toNumber())}`
                       : formatCurrency(item.unitPrice.toNumber())}
                   </td>
                   <td className="px-5 py-3 text-right tabular-nums font-medium">
-                    {item.type === "DISCOUNT"
-                      ? <span className="text-destructive">-{formatCurrency(item.total.toNumber())}</span>
-                      : formatCurrency(item.total.toNumber())}
+                    {item.type === "DISCOUNT" ? (
+                      <span className="text-destructive">
+                        -{formatCurrency(item.total.toNumber())}
+                      </span>
+                    ) : (
+                      formatCurrency(item.total.toNumber())
+                    )}
                   </td>
                 </tr>
               ))}
@@ -183,12 +204,16 @@ export default async function EstimateDetailPage({
           <div className="px-5 py-4 border-t bg-muted/20 space-y-1.5 text-sm">
             <div className="flex justify-between max-w-xs ml-auto">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-medium tabular-nums">{formatCurrency(estimate.subtotal.toNumber())}</span>
+              <span className="font-medium tabular-nums">
+                {formatCurrency(estimate.subtotal.toNumber())}
+              </span>
             </div>
             {estimate.taxAmount.toNumber() > 0 && (
               <div className="flex justify-between max-w-xs ml-auto">
                 <span className="text-muted-foreground">Tax</span>
-                <span className="font-medium tabular-nums">{formatCurrency(estimate.taxAmount.toNumber())}</span>
+                <span className="font-medium tabular-nums">
+                  {formatCurrency(estimate.taxAmount.toNumber())}
+                </span>
               </div>
             )}
             <div className="flex justify-between max-w-xs ml-auto text-base font-semibold pt-1 border-t">
@@ -203,13 +228,17 @@ export default async function EstimateDetailPage({
           <div className="rounded-xl border bg-card p-5 space-y-4 text-sm">
             {estimate.notes && (
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Customer notes</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                  Customer notes
+                </p>
                 <p className="whitespace-pre-wrap">{estimate.notes}</p>
               </div>
             )}
             {estimate.internalNotes && (
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Internal notes</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                  Internal notes
+                </p>
                 <p className="whitespace-pre-wrap">{estimate.internalNotes}</p>
               </div>
             )}
@@ -219,7 +248,9 @@ export default async function EstimateDetailPage({
         {/* Share link if sent */}
         {estimate.shareToken && (
           <div className="rounded-xl border bg-card p-5 text-sm">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Customer link</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
+              Customer link
+            </p>
             <code className="block font-mono text-xs bg-muted px-3 py-2 rounded break-all">
               {`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/customer-portal/estimates/${estimate.shareToken}`}
             </code>

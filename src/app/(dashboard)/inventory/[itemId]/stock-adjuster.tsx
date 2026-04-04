@@ -68,7 +68,9 @@ export function StockAdjuster({ itemId, currentQty }: StockAdjusterProps) {
 
         <div className="flex items-end gap-2 pb-0.5">
           <div className="text-sm text-muted-foreground pb-2">
-            {adjustment >= 0 ? "+" : ""}{adjustment} → <span className="font-semibold text-foreground">{currentQty + adjustment}</span>
+            {adjustment >= 0 ? "+" : ""}
+            {adjustment} →{" "}
+            <span className="font-semibold text-foreground">{currentQty + adjustment}</span>
           </div>
           <Button type="submit" size="sm" disabled={pending || adjustment === 0} className="h-9">
             {pending ? "Saving…" : "Apply"}
@@ -76,11 +78,11 @@ export function StockAdjuster({ itemId, currentQty }: StockAdjusterProps) {
         </div>
       </form>
 
-      {state && "error" in state && (
-        <p className="text-destructive text-xs mt-3">{state.error}</p>
-      )}
+      {state && "error" in state && <p className="text-destructive text-xs mt-3">{state.error}</p>}
       {isSuccess && (
-        <p className="text-green-600 text-xs mt-3">Stock updated to {(state as { success: boolean; newQuantity: number }).newQuantity}</p>
+        <p className="text-green-600 text-xs mt-3">
+          Stock updated to {(state as { success: boolean; newQuantity: number }).newQuantity}
+        </p>
       )}
     </div>
   )

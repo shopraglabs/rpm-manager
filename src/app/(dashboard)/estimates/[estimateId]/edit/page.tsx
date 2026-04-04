@@ -47,13 +47,19 @@ export default async function EditEstimatePage({
         action={updateWithId}
         submitLabel="Save Changes"
         cancelSlot={
-          <Button type="button" variant="outline" render={<Link href={`/estimates/${estimateId}`} />}>
+          <Button
+            type="button"
+            variant="outline"
+            render={<Link href={`/estimates/${estimateId}`} />}
+          >
             Cancel
           </Button>
         }
         deleteSlot={
           <form
-            action={async () => { await deleteWithId() }}
+            action={async () => {
+              await deleteWithId()
+            }}
             onSubmit={(e) => {
               if (!confirm("Delete this estimate? This cannot be undone.")) {
                 e.preventDefault()

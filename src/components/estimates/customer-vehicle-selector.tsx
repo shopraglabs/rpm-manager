@@ -3,11 +3,7 @@
 import { useState, useTransition } from "react"
 import { ChevronsUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
   Command,
   CommandEmpty,
@@ -123,8 +119,8 @@ export function CustomerVehicleSelector({
             {selectedVehicle
               ? vehicleLabel(selectedVehicle)
               : vehicles.length === 0 && customerId
-              ? "No vehicles on file"
-              : "Select vehicle…"}
+                ? "No vehicles on file"
+                : "Select vehicle…"}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
           <PopoverContent className="w-72 p-0" align="start">

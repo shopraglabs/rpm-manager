@@ -9,10 +9,7 @@ describe("hasPermission", () => {
   it("grants OWNER all permissions", () => {
     const allPermissions = Object.keys(PERMISSIONS) as (keyof typeof PERMISSIONS)[]
     for (const permission of allPermissions) {
-      expect(
-        hasPermission("OWNER", permission),
-        `OWNER should have '${permission}'`
-      ).toBe(true)
+      expect(hasPermission("OWNER", permission), `OWNER should have '${permission}'`).toBe(true)
     }
   })
 
@@ -114,21 +111,15 @@ describe("requirePermission", () => {
   })
 
   it("throws an error containing the permission name", () => {
-    expect(() => requirePermission("TECHNICIAN", "invoices:void")).toThrowError(
-      "invoices:void"
-    )
+    expect(() => requirePermission("TECHNICIAN", "invoices:void")).toThrowError("invoices:void")
   })
 
   it("throws an error containing the required roles", () => {
-    expect(() => requirePermission("TECHNICIAN", "invoices:void")).toThrowError(
-      /OWNER|MANAGER/
-    )
+    expect(() => requirePermission("TECHNICIAN", "invoices:void")).toThrowError(/OWNER|MANAGER/)
   })
 
   it("throws an error mentioning Forbidden", () => {
-    expect(() => requirePermission("SERVICE_WRITER", "customers:delete")).toThrowError(
-      /Forbidden/i
-    )
+    expect(() => requirePermission("SERVICE_WRITER", "customers:delete")).toThrowError(/Forbidden/i)
   })
 })
 

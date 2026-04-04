@@ -5,7 +5,11 @@ import { ChevronLeft, CheckCircle2, Send, ClipboardList } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getInspection } from "@/modules/inspections/queries"
-import { completeInspection, sendInspectionToCustomer, updateInspectionNotes } from "@/modules/inspections/actions"
+import {
+  completeInspection,
+  sendInspectionToCustomer,
+  updateInspectionNotes,
+} from "@/modules/inspections/actions"
 import { InspectionItemRow } from "./inspection-item-row"
 import { CONDITION_LABELS, CONDITION_COLORS } from "@/modules/inspections/templates"
 import { formatDateTime } from "@/lib/utils/format"
@@ -68,7 +72,11 @@ export default async function InspectionPage({
     <div className="max-w-3xl">
       {/* Back */}
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="sm" render={<Link href={`/work-orders/${inspection.workOrder.id}`} />}>
+        <Button
+          variant="ghost"
+          size="sm"
+          render={<Link href={`/work-orders/${inspection.workOrder.id}`} />}
+        >
           <ChevronLeft className="h-4 w-4" />
           {inspection.workOrder.orderNumber}
         </Button>
@@ -101,15 +109,25 @@ export default async function InspectionPage({
 
         <div className="flex gap-2 shrink-0">
           {isEditable && (
-            <form action={async () => { await completeWithId() }}>
+            <form
+              action={async () => {
+                await completeWithId()
+              }}
+            >
               <Button type="submit" variant="outline" size="sm">
                 <CheckCircle2 className="h-4 w-4 mr-2" />
                 Mark Complete
               </Button>
             </form>
           )}
-          {(inspection.status === "COMPLETED" || inspection.status === "SENT" || inspection.status === "VIEWED") && (
-            <form action={async () => { await sendWithId() }}>
+          {(inspection.status === "COMPLETED" ||
+            inspection.status === "SENT" ||
+            inspection.status === "VIEWED") && (
+            <form
+              action={async () => {
+                await sendWithId()
+              }}
+            >
               <Button type="submit" size="sm">
                 <Send className="h-4 w-4 mr-2" />
                 {inspection.sentToCustomer ? "Resend Link" : "Send to Customer"}
@@ -126,7 +144,10 @@ export default async function InspectionPage({
           if (count === 0) return null
           const colors = CONDITION_COLORS[c]
           return (
-            <div key={c} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium ${colors.bg} ${colors.text} ${colors.border}`}>
+            <div
+              key={c}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium ${colors.bg} ${colors.text} ${colors.border}`}
+            >
               <span className="text-base font-bold tabular-nums">{count}</span>
               {CONDITION_LABELS[c]}
             </div>
@@ -147,9 +168,7 @@ export default async function InspectionPage({
             size="sm"
             className="shrink-0"
             onClick={undefined}
-            render={
-              <a href={shareUrl} target="_blank" rel="noopener noreferrer" />
-            }
+            render={<a href={shareUrl} target="_blank" rel="noopener noreferrer" />}
           >
             Open
           </Button>
@@ -167,7 +186,12 @@ export default async function InspectionPage({
               {items.map((item) => (
                 <InspectionItemRow
                   key={item.id}
-                  item={{ id: item.id, name: item.name, condition: item.condition, notes: item.notes }}
+                  item={{
+                    id: item.id,
+                    name: item.name,
+                    condition: item.condition,
+                    notes: item.notes,
+                  }}
                   readOnly={!isEditable}
                 />
               ))}
@@ -180,7 +204,11 @@ export default async function InspectionPage({
       <div className="mt-6 rounded-xl border bg-card p-5">
         <h2 className="font-medium text-sm mb-3">Overall Notes</h2>
         {isEditable ? (
-          <form action={async (fd) => { await notesWithId(fd) }}>
+          <form
+            action={async (fd) => {
+              await notesWithId(fd)
+            }}
+          >
             <textarea
               name="notes"
               defaultValue={inspection.notes ?? ""}
@@ -188,7 +216,9 @@ export default async function InspectionPage({
               rows={4}
               className="w-full text-sm bg-muted/40 border rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground mb-3"
             />
-            <Button type="submit" size="sm" variant="outline">Save Notes</Button>
+            <Button type="submit" size="sm" variant="outline">
+              Save Notes
+            </Button>
           </form>
         ) : (
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">

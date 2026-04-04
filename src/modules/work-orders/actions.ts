@@ -57,18 +57,21 @@ export async function createWorkOrder(formData: FormData) {
           note: "Work order created",
         },
       },
-      lineItems: lineItems.length > 0 ? {
-        create: lineItems.map((item) => ({
-          type: item.type,
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          total: item.quantity * item.unitPrice,
-          laborHours: item.laborHours,
-          partNumber: item.partNumber,
-          sortOrder: item.sortOrder ?? 0,
-        })),
-      } : undefined,
+      lineItems:
+        lineItems.length > 0
+          ? {
+              create: lineItems.map((item) => ({
+                type: item.type,
+                description: item.description,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                total: item.quantity * item.unitPrice,
+                laborHours: item.laborHours,
+                partNumber: item.partNumber,
+                sortOrder: item.sortOrder ?? 0,
+              })),
+            }
+          : undefined,
     },
   })
 
@@ -109,18 +112,21 @@ export async function updateWorkOrder(id: string, formData: FormData) {
         subtotal,
         taxAmount,
         total,
-        lineItems: lineItems.length > 0 ? {
-          create: lineItems.map((item) => ({
-            type: item.type,
-            description: item.description,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            total: item.quantity * item.unitPrice,
-            laborHours: item.laborHours,
-            partNumber: item.partNumber,
-            sortOrder: item.sortOrder ?? 0,
-          })),
-        } : undefined,
+        lineItems:
+          lineItems.length > 0
+            ? {
+                create: lineItems.map((item) => ({
+                  type: item.type,
+                  description: item.description,
+                  quantity: item.quantity,
+                  unitPrice: item.unitPrice,
+                  total: item.quantity * item.unitPrice,
+                  laborHours: item.laborHours,
+                  partNumber: item.partNumber,
+                  sortOrder: item.sortOrder ?? 0,
+                })),
+              }
+            : undefined,
       },
     }),
   ])
@@ -130,10 +136,7 @@ export async function updateWorkOrder(id: string, formData: FormData) {
   redirect(`/work-orders/${id}`)
 }
 
-export async function transitionStatus(
-  id: string,
-  formData: FormData
-) {
+export async function transitionStatus(id: string, formData: FormData) {
   const { tenantId, id: userId, role } = await requireAuth()
   requirePermission(role, "work-orders:status")
 

@@ -89,15 +89,26 @@ export default async function InvoiceDetailPage({
           <p className="text-muted-foreground text-sm mt-1">
             {invoice.customer.firstName} {invoice.customer.lastName}
             {invoice.workOrder && (
-              <> · <Link href={`/work-orders/${invoice.workOrder.id}`} className="hover:underline font-mono">
-                {invoice.workOrder.orderNumber}
-              </Link></>
+              <>
+                {" "}
+                ·{" "}
+                <Link
+                  href={`/work-orders/${invoice.workOrder.id}`}
+                  className="hover:underline font-mono"
+                >
+                  {invoice.workOrder.orderNumber}
+                </Link>
+              </>
             )}
           </p>
         </div>
         <div className="flex gap-2">
           {canSend && (
-            <form action={async () => { await sendWithId() }}>
+            <form
+              action={async () => {
+                await sendWithId()
+              }}
+            >
               <Button type="submit" variant="outline">
                 <Send className="h-4 w-4 mr-2" />
                 Send
@@ -106,7 +117,9 @@ export default async function InvoiceDetailPage({
           )}
           {canVoid && (
             <form
-              action={async () => { await voidWithId() }}
+              action={async () => {
+                await voidWithId()
+              }}
               onSubmit={(e) => {
                 if (!confirm("Void this invoice? This cannot be undone.")) e.preventDefault()
               }}
@@ -139,7 +152,9 @@ export default async function InvoiceDetailPage({
             </div>
             <div>
               <p className="text-muted-foreground">Balance due</p>
-              <p className={`font-semibold text-base mt-0.5 tabular-nums ${amountDue > 0 ? "text-destructive" : "text-muted-foreground"}`}>
+              <p
+                className={`font-semibold text-base mt-0.5 tabular-nums ${amountDue > 0 ? "text-destructive" : "text-muted-foreground"}`}
+              >
                 {amountDue > 0 ? formatCurrency(amountDue) : "—"}
               </p>
             </div>
@@ -159,11 +174,19 @@ export default async function InvoiceDetailPage({
             <table className="w-full text-sm">
               <thead className="bg-muted/40 border-b">
                 <tr>
-                  <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">Description</th>
-                  <th className="text-left px-3 py-2.5 font-medium text-muted-foreground hidden md:table-cell">Type</th>
+                  <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">
+                    Description
+                  </th>
+                  <th className="text-left px-3 py-2.5 font-medium text-muted-foreground hidden md:table-cell">
+                    Type
+                  </th>
                   <th className="text-right px-3 py-2.5 font-medium text-muted-foreground">Qty</th>
-                  <th className="text-right px-3 py-2.5 font-medium text-muted-foreground">Unit price</th>
-                  <th className="text-right px-5 py-2.5 font-medium text-muted-foreground">Total</th>
+                  <th className="text-right px-3 py-2.5 font-medium text-muted-foreground">
+                    Unit price
+                  </th>
+                  <th className="text-right px-5 py-2.5 font-medium text-muted-foreground">
+                    Total
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -173,16 +196,22 @@ export default async function InvoiceDetailPage({
                     <td className="px-3 py-3 text-muted-foreground hidden md:table-cell">
                       {LINE_ITEM_TYPE_LABELS[item.type] ?? item.type}
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums">{item.quantity.toString()}</td>
+                    <td className="px-3 py-3 text-right tabular-nums">
+                      {item.quantity.toString()}
+                    </td>
                     <td className="px-3 py-3 text-right tabular-nums">
                       {item.type === "DISCOUNT"
                         ? `-${formatCurrency(item.unitPrice.toNumber())}`
                         : formatCurrency(item.unitPrice.toNumber())}
                     </td>
                     <td className="px-5 py-3 text-right tabular-nums font-medium">
-                      {item.type === "DISCOUNT"
-                        ? <span className="text-destructive">-{formatCurrency(item.total.toNumber())}</span>
-                        : formatCurrency(item.total.toNumber())}
+                      {item.type === "DISCOUNT" ? (
+                        <span className="text-destructive">
+                          -{formatCurrency(item.total.toNumber())}
+                        </span>
+                      ) : (
+                        formatCurrency(item.total.toNumber())
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -192,12 +221,16 @@ export default async function InvoiceDetailPage({
             <div className="px-5 py-4 border-t bg-muted/20 space-y-1 text-sm">
               <div className="flex justify-between max-w-xs ml-auto">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium tabular-nums">{formatCurrency(invoice.subtotal.toNumber())}</span>
+                <span className="font-medium tabular-nums">
+                  {formatCurrency(invoice.subtotal.toNumber())}
+                </span>
               </div>
               {invoice.taxAmount.toNumber() > 0 && (
                 <div className="flex justify-between max-w-xs ml-auto">
                   <span className="text-muted-foreground">Tax</span>
-                  <span className="font-medium tabular-nums">{formatCurrency(invoice.taxAmount.toNumber())}</span>
+                  <span className="font-medium tabular-nums">
+                    {formatCurrency(invoice.taxAmount.toNumber())}
+                  </span>
                 </div>
               )}
               <div className="flex justify-between max-w-xs ml-auto text-base font-semibold pt-1 border-t">
@@ -216,17 +249,29 @@ export default async function InvoiceDetailPage({
               <table className="w-full text-sm">
                 <thead className="bg-muted/40 border-b">
                   <tr>
-                    <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">Date</th>
-                    <th className="text-left px-3 py-2.5 font-medium text-muted-foreground">Method</th>
-                    <th className="text-left px-3 py-2.5 font-medium text-muted-foreground hidden md:table-cell">Reference</th>
-                    <th className="text-right px-5 py-2.5 font-medium text-muted-foreground">Amount</th>
+                    <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">
+                      Date
+                    </th>
+                    <th className="text-left px-3 py-2.5 font-medium text-muted-foreground">
+                      Method
+                    </th>
+                    <th className="text-left px-3 py-2.5 font-medium text-muted-foreground hidden md:table-cell">
+                      Reference
+                    </th>
+                    <th className="text-right px-5 py-2.5 font-medium text-muted-foreground">
+                      Amount
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {invoice.payments.map((pmt) => (
                     <tr key={pmt.id}>
-                      <td className="px-5 py-3 text-muted-foreground">{formatDateTime(pmt.createdAt)}</td>
-                      <td className="px-3 py-3">{PAYMENT_METHOD_LABELS[pmt.method] ?? pmt.method}</td>
+                      <td className="px-5 py-3 text-muted-foreground">
+                        {formatDateTime(pmt.createdAt)}
+                      </td>
+                      <td className="px-3 py-3">
+                        {PAYMENT_METHOD_LABELS[pmt.method] ?? pmt.method}
+                      </td>
                       <td className="px-3 py-3 text-muted-foreground font-mono text-xs hidden md:table-cell">
                         {pmt.reference ?? "—"}
                       </td>
@@ -251,7 +296,9 @@ export default async function InvoiceDetailPage({
           {/* Share link */}
           {invoice.shareToken && (
             <div className="rounded-xl border bg-card p-5 text-sm">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Customer link</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
+                Customer link
+              </p>
               <code className="block font-mono text-xs bg-muted px-3 py-2 rounded break-all">
                 {`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/customer-portal/invoices/${invoice.shareToken}`}
               </code>

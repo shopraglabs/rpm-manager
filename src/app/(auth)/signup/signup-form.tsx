@@ -40,12 +40,7 @@ export function SignupForm() {
 
       <div className="space-y-2">
         <Label htmlFor="shopName">Shop name</Label>
-        <Input
-          id="shopName"
-          name="shopName"
-          placeholder="Smith's Auto Repair"
-          required
-        />
+        <Input id="shopName" name="shopName" placeholder="Smith's Auto Repair" required />
       </div>
 
       <div className="space-y-2">

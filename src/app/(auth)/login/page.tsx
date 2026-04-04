@@ -11,9 +11,7 @@ export default function LoginPage() {
     <div className="bg-card rounded-xl border shadow-sm p-8">
       <div className="mb-6">
         <h2 className="text-2xl font-semibold">Welcome back</h2>
-        <p className="text-muted-foreground text-sm mt-1">
-          Sign in to your shop account
-        </p>
+        <p className="text-muted-foreground text-sm mt-1">Sign in to your shop account</p>
       </div>
       <LoginForm />
       <p className="text-center text-sm text-muted-foreground mt-6">

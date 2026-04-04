@@ -64,22 +64,24 @@ export default async function WorkOrderDetailPage({
       <div className="flex items-start justify-between mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight font-mono">
-              {wo.orderNumber}
-            </h1>
+            <h1 className="text-2xl font-semibold tracking-tight font-mono">{wo.orderNumber}</h1>
             <Badge variant="outline" className={STATUS_COLORS[wo.status] ?? ""}>
               {STATUS_LABELS[wo.status] ?? wo.status}
             </Badge>
           </div>
           <p className="text-muted-foreground text-sm mt-1">
             {wo.customer.firstName} {wo.customer.lastName} ·{" "}
-            {wo.vehicle.year ? `${wo.vehicle.year} ` : ""}{wo.vehicle.make} {wo.vehicle.model}
+            {wo.vehicle.year ? `${wo.vehicle.year} ` : ""}
+            {wo.vehicle.make} {wo.vehicle.model}
             {wo.vehicle.licensePlate ? ` (${wo.vehicle.licensePlate})` : ""}
           </p>
         </div>
         <div className="flex gap-2">
           {canInvoice && (
-            <Button variant="outline" render={<Link href={`/invoices/new?workOrderId=${workOrderId}`} />}>
+            <Button
+              variant="outline"
+              render={<Link href={`/invoices/new?workOrderId=${workOrderId}`} />}
+            >
               <FileText className="h-4 w-4 mr-2" />
               Create Invoice
             </Button>
@@ -110,7 +112,8 @@ export default async function WorkOrderDetailPage({
               <p className="text-muted-foreground">Vehicle</p>
               <p className="font-medium mt-0.5">
                 <Link href={`/vehicles/${wo.vehicle.id}`} className="hover:underline">
-                  {wo.vehicle.year ? `${wo.vehicle.year} ` : ""}{wo.vehicle.make} {wo.vehicle.model}
+                  {wo.vehicle.year ? `${wo.vehicle.year} ` : ""}
+                  {wo.vehicle.make} {wo.vehicle.model}
                 </Link>
               </p>
             </div>
@@ -121,9 +124,7 @@ export default async function WorkOrderDetailPage({
             <div>
               <p className="text-muted-foreground">Assigned to</p>
               <p className="font-medium mt-0.5">
-                {wo.assignedTo
-                  ? `${wo.assignedTo.firstName} ${wo.assignedTo.lastName}`
-                  : "—"}
+                {wo.assignedTo ? `${wo.assignedTo.firstName} ${wo.assignedTo.lastName}` : "—"}
               </p>
             </div>
             <div>
@@ -159,11 +160,21 @@ export default async function WorkOrderDetailPage({
               <table className="w-full text-sm">
                 <thead className="bg-muted/40 border-b">
                   <tr>
-                    <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">Description</th>
-                    <th className="text-left px-3 py-2.5 font-medium text-muted-foreground hidden md:table-cell">Type</th>
-                    <th className="text-right px-3 py-2.5 font-medium text-muted-foreground">Qty</th>
-                    <th className="text-right px-3 py-2.5 font-medium text-muted-foreground">Unit price</th>
-                    <th className="text-right px-5 py-2.5 font-medium text-muted-foreground">Total</th>
+                    <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">
+                      Description
+                    </th>
+                    <th className="text-left px-3 py-2.5 font-medium text-muted-foreground hidden md:table-cell">
+                      Type
+                    </th>
+                    <th className="text-right px-3 py-2.5 font-medium text-muted-foreground">
+                      Qty
+                    </th>
+                    <th className="text-right px-3 py-2.5 font-medium text-muted-foreground">
+                      Unit price
+                    </th>
+                    <th className="text-right px-5 py-2.5 font-medium text-muted-foreground">
+                      Total
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -172,14 +183,20 @@ export default async function WorkOrderDetailPage({
                       <td className="px-5 py-3">
                         <p>{item.description}</p>
                         {item.partNumber && (
-                          <p className="text-xs text-muted-foreground font-mono">{item.partNumber}</p>
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {item.partNumber}
+                          </p>
                         )}
                       </td>
                       <td className="px-3 py-3 text-muted-foreground hidden md:table-cell">
                         {LINE_ITEM_TYPE_LABELS[item.type] ?? item.type}
                       </td>
-                      <td className="px-3 py-3 text-right tabular-nums">{item.quantity.toString()}</td>
-                      <td className="px-3 py-3 text-right tabular-nums">{formatCurrency(item.unitPrice.toNumber())}</td>
+                      <td className="px-3 py-3 text-right tabular-nums">
+                        {item.quantity.toString()}
+                      </td>
+                      <td className="px-3 py-3 text-right tabular-nums">
+                        {formatCurrency(item.unitPrice.toNumber())}
+                      </td>
                       <td className="px-5 py-3 text-right tabular-nums font-medium">
                         {formatCurrency(item.total.toNumber())}
                       </td>
@@ -190,12 +207,16 @@ export default async function WorkOrderDetailPage({
               <div className="px-5 py-4 border-t bg-muted/20 space-y-1 text-sm">
                 <div className="flex justify-between max-w-xs ml-auto">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium tabular-nums">{formatCurrency(wo.subtotal.toNumber())}</span>
+                  <span className="font-medium tabular-nums">
+                    {formatCurrency(wo.subtotal.toNumber())}
+                  </span>
                 </div>
                 {wo.taxAmount.toNumber() > 0 && (
                   <div className="flex justify-between max-w-xs ml-auto">
                     <span className="text-muted-foreground">Tax</span>
-                    <span className="font-medium tabular-nums">{formatCurrency(wo.taxAmount.toNumber())}</span>
+                    <span className="font-medium tabular-nums">
+                      {formatCurrency(wo.taxAmount.toNumber())}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between max-w-xs ml-auto text-base font-semibold pt-1 border-t">
@@ -211,13 +232,17 @@ export default async function WorkOrderDetailPage({
             <div className="rounded-xl border bg-card p-5 space-y-4 text-sm">
               {wo.notes && (
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Customer notes</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                    Customer notes
+                  </p>
                   <p className="whitespace-pre-wrap">{wo.notes}</p>
                 </div>
               )}
               {wo.internalNotes && (
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Internal notes</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                    Internal notes
+                  </p>
                   <p className="whitespace-pre-wrap">{wo.internalNotes}</p>
                 </div>
               )}
@@ -241,18 +266,30 @@ export default async function WorkOrderDetailPage({
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{inspection._count.items} items</span>
                   <Badge variant="outline" className="text-xs">
-                    {inspection.status === "IN_PROGRESS" ? "In Progress"
-                      : inspection.status === "COMPLETED" ? "Completed"
-                      : inspection.status === "SENT" ? "Sent"
-                      : "Viewed"}
+                    {inspection.status === "IN_PROGRESS"
+                      ? "In Progress"
+                      : inspection.status === "COMPLETED"
+                        ? "Completed"
+                        : inspection.status === "SENT"
+                          ? "Sent"
+                          : "Viewed"}
                   </Badge>
                 </div>
-                <Button variant="outline" size="sm" className="w-full" render={<Link href={`/inspections/${inspection.id}`} />}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  render={<Link href={`/inspections/${inspection.id}`} />}
+                >
                   View Inspection
                 </Button>
               </div>
             ) : (
-              <form action={async () => { await createInspectionWithId() }}>
+              <form
+                action={async () => {
+                  await createInspectionWithId()
+                }}
+              >
                 <Button type="submit" variant="outline" size="sm" className="w-full">
                   Start Inspection
                 </Button>
@@ -267,12 +304,14 @@ export default async function WorkOrderDetailPage({
               {wo.statusHistory.map((entry) => (
                 <li key={entry.id} className="text-xs">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-medium">{STATUS_LABELS[entry.toStatus] ?? entry.toStatus}</span>
-                    <span className="text-muted-foreground">· {formatDateTime(entry.createdAt)}</span>
+                    <span className="font-medium">
+                      {STATUS_LABELS[entry.toStatus] ?? entry.toStatus}
+                    </span>
+                    <span className="text-muted-foreground">
+                      · {formatDateTime(entry.createdAt)}
+                    </span>
                   </div>
-                  {entry.note && (
-                    <p className="text-muted-foreground mt-0.5 ml-0">{entry.note}</p>
-                  )}
+                  {entry.note && <p className="text-muted-foreground mt-0.5 ml-0">{entry.note}</p>}
                   {entry.changedBy && (
                     <p className="text-muted-foreground/70 mt-0.5">
                       by {entry.changedBy.firstName} {entry.changedBy.lastName}

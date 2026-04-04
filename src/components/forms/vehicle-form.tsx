@@ -1,7 +1,8 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useRef, useState } from "react"
 import { useFormStatus } from "react-dom"
+import { Loader2, Scan } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import type { VinDecodeResult } from "@/app/api/vin/route"
 
 function SubmitButton({ label = "Save Vehicle" }: { label?: string }) {
   const { pending } = useFormStatus()
@@ -56,6 +58,54 @@ export function VehicleForm({
     null
   )
 
+  // VIN decode state
+  const vinRef = useRef<HTMLInputElement>(null)
+  const yearRef = useRef<HTMLInputElement>(null)
+  const makeRef = useRef<HTMLInputElement>(null)
+  const modelRef = useRef<HTMLInputElement>(null)
+  const trimRef = useRef<HTMLInputElement>(null)
+  const engineRef = useRef<HTMLInputElement>(null)
+  const [transmission, setTransmission] = useState<string>(defaultValues?.transmission ?? "")
+  const [decoding, setDecoding] = useState(false)
+  const [decodeError, setDecodeError] = useState<string | null>(null)
+  const [decodeSuccess, setDecodeSuccess] = useState(false)
+
+  async function decodeVin() {
+    const vin = vinRef.current?.value.trim()
+    if (!vin || vin.length !== 17) {
+      setDecodeError("Enter a 17-character VIN first")
+      return
+    }
+
+    setDecoding(true)
+    setDecodeError(null)
+    setDecodeSuccess(false)
+
+    try {
+      const res = await fetch(`/api/vin?vin=${encodeURIComponent(vin)}`)
+      const data: VinDecodeResult | { error: string } = await res.json()
+
+      if (!res.ok || "error" in data) {
+        setDecodeError("error" in data ? data.error : "Could not decode VIN")
+        return
+      }
+
+      // Fill in decoded fields
+      if (data.year && yearRef.current) yearRef.current.value = String(data.year)
+      if (data.make && makeRef.current) makeRef.current.value = data.make
+      if (data.model && modelRef.current) modelRef.current.value = data.model
+      if (data.trim && trimRef.current) trimRef.current.value = data.trim
+      if (data.engineSize && engineRef.current) engineRef.current.value = data.engineSize
+      if (data.transmission) setTransmission(data.transmission)
+
+      setDecodeSuccess(true)
+    } catch {
+      setDecodeError("Network error — check your connection")
+    } finally {
+      setDecoding(false)
+    }
+  }
+
   return (
     <form action={formAction} className="space-y-6">
       {state?.error && (
@@ -64,11 +114,53 @@ export function VehicleForm({
         </div>
       )}
 
+      {/* VIN / License Plate — VIN first now with decoder */}
+      <div className="space-y-2">
+        <Label htmlFor="vin">VIN</Label>
+        <div className="flex gap-2">
+          <Input
+            ref={vinRef}
+            id="vin"
+            name="vin"
+            defaultValue={defaultValues?.vin ?? ""}
+            placeholder="1HGBH41JXMN109186"
+            className="font-mono uppercase"
+            maxLength={17}
+            onChange={() => {
+              setDecodeError(null)
+              setDecodeSuccess(false)
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0 gap-1.5"
+            disabled={decoding}
+            onClick={decodeVin}
+          >
+            {decoding ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Scan className="h-3.5 w-3.5" />
+            )}
+            Decode
+          </Button>
+        </div>
+        {decodeError && <p className="text-xs text-destructive">{decodeError}</p>}
+        {decodeSuccess && (
+          <p className="text-xs text-green-600">
+            ✓ VIN decoded — fields pre-filled from NHTSA database
+          </p>
+        )}
+      </div>
+
       {/* Year / Make / Model */}
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="year">Year</Label>
           <Input
+            ref={yearRef}
             id="year"
             name="year"
             type="number"
@@ -81,6 +173,7 @@ export function VehicleForm({
         <div className="space-y-2">
           <Label htmlFor="make">Make *</Label>
           <Input
+            ref={makeRef}
             id="make"
             name="make"
             defaultValue={defaultValues?.make}
@@ -91,6 +184,7 @@ export function VehicleForm({
         <div className="space-y-2">
           <Label htmlFor="model">Model *</Label>
           <Input
+            ref={modelRef}
             id="model"
             name="model"
             defaultValue={defaultValues?.model}
@@ -105,6 +199,7 @@ export function VehicleForm({
         <div className="space-y-2">
           <Label htmlFor="trim">Trim</Label>
           <Input
+            ref={trimRef}
             id="trim"
             name="trim"
             defaultValue={defaultValues?.trim ?? ""}
@@ -122,18 +217,8 @@ export function VehicleForm({
         </div>
       </div>
 
-      {/* VIN / License Plate */}
+      {/* License Plate */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="vin">VIN</Label>
-          <Input
-            id="vin"
-            name="vin"
-            defaultValue={defaultValues?.vin ?? ""}
-            placeholder="1HGBH41JXMN109186"
-            className="font-mono"
-          />
-        </div>
         <div className="space-y-2">
           <Label htmlFor="licensePlate">License plate</Label>
           <Input
@@ -150,6 +235,7 @@ export function VehicleForm({
         <div className="space-y-2">
           <Label htmlFor="engineSize">Engine</Label>
           <Input
+            ref={engineRef}
             id="engineSize"
             name="engineSize"
             defaultValue={defaultValues?.engineSize ?? ""}
@@ -158,7 +244,11 @@ export function VehicleForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="transmission">Transmission</Label>
-          <Select name="transmission" defaultValue={defaultValues?.transmission ?? ""}>
+          <Select
+            name="transmission"
+            value={transmission}
+            onValueChange={(v) => setTransmission(v ?? "")}
+          >
             <SelectTrigger id="transmission">
               <SelectValue placeholder="Select" />
             </SelectTrigger>
@@ -199,7 +289,9 @@ export function VehicleForm({
       <div className="flex items-center justify-between pt-2">
         {deleteAction ? (
           <form
-            action={async (fd) => { await deleteAction(fd) }}
+            action={async (fd) => {
+              await deleteAction(fd)
+            }}
             onSubmit={(e) => {
               if (!confirm("Delete this vehicle? This cannot be undone.")) {
                 e.preventDefault()

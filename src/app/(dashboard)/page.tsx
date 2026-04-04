@@ -1,13 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import {
-  Wrench,
-  FileText,
-  TrendingUp,
-  TrendingDown,
-  Car,
-  AlertCircle,
-} from "lucide-react"
+import { Wrench, FileText, TrendingUp, TrendingDown, Car, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { requireAuth } from "@/lib/auth/session"
 import { getDashboardStats } from "@/modules/dashboard/queries"
@@ -60,10 +53,7 @@ const INV_STATUS_LABELS: Record<string, string> = {
 }
 
 export default async function DashboardPage() {
-  const [user, stats] = await Promise.all([
-    requireAuth(),
-    getDashboardStats(),
-  ])
+  const [user, stats] = await Promise.all([requireAuth(), getDashboardStats()])
 
   const growthPositive = (stats.monthGrowth ?? 0) >= 0
 
@@ -71,11 +61,13 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Welcome back, {user.firstName}
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome back, {user.firstName}</h1>
         <p className="text-muted-foreground text-sm mt-0.5">
-          {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+          {new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          })}
         </p>
       </div>
 
@@ -122,9 +114,7 @@ export default async function DashboardPage() {
             <p className="text-sm text-muted-foreground">Revenue Today</p>
             <Car className="h-4 w-4 text-muted-foreground" />
           </div>
-          <p className="text-3xl font-bold tabular-nums">
-            {formatCurrency(stats.revenueToday)}
-          </p>
+          <p className="text-3xl font-bold tabular-nums">{formatCurrency(stats.revenueToday)}</p>
           <p className="text-xs text-muted-foreground mt-1.5">payments collected</p>
         </div>
 
@@ -140,12 +130,13 @@ export default async function DashboardPage() {
               )
             ) : null}
           </div>
-          <p className="text-3xl font-bold tabular-nums">
-            {formatCurrency(stats.revenueMonth)}
-          </p>
+          <p className="text-3xl font-bold tabular-nums">{formatCurrency(stats.revenueMonth)}</p>
           {stats.monthGrowth !== null && (
-            <p className={`text-xs mt-1.5 font-medium ${growthPositive ? "text-green-600" : "text-destructive"}`}>
-              {growthPositive ? "+" : ""}{stats.monthGrowth.toFixed(1)}% vs last month
+            <p
+              className={`text-xs mt-1.5 font-medium ${growthPositive ? "text-green-600" : "text-destructive"}`}
+            >
+              {growthPositive ? "+" : ""}
+              {stats.monthGrowth.toFixed(1)}% vs last month
             </p>
           )}
         </div>
@@ -157,7 +148,10 @@ export default async function DashboardPage() {
         <div className="rounded-xl border bg-card overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b">
             <h2 className="font-medium">Recent Work Orders</h2>
-            <Link href="/work-orders" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/work-orders"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
               View all →
             </Link>
           </div>
@@ -177,13 +171,17 @@ export default async function DashboardPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-sm font-medium">{wo.orderNumber}</span>
-                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${WO_STATUS_COLORS[wo.status] ?? ""}`}>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] px-1.5 py-0 ${WO_STATUS_COLORS[wo.status] ?? ""}`}
+                        >
                           {WO_STATUS_LABELS[wo.status] ?? wo.status}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5 truncate">
                         {wo.customer.firstName} {wo.customer.lastName} ·{" "}
-                        {wo.vehicle.year ? `${wo.vehicle.year} ` : ""}{wo.vehicle.make} {wo.vehicle.model}
+                        {wo.vehicle.year ? `${wo.vehicle.year} ` : ""}
+                        {wo.vehicle.make} {wo.vehicle.model}
                       </p>
                     </div>
                     <span className="text-xs text-muted-foreground ml-3 shrink-0">
@@ -200,7 +198,10 @@ export default async function DashboardPage() {
         <div className="rounded-xl border bg-card overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b">
             <h2 className="font-medium">Recent Invoices</h2>
-            <Link href="/invoices" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/invoices"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
               View all →
             </Link>
           </div>
@@ -220,7 +221,10 @@ export default async function DashboardPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-sm font-medium">{inv.invoiceNumber}</span>
-                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${INV_STATUS_COLORS[inv.status] ?? ""}`}>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] px-1.5 py-0 ${INV_STATUS_COLORS[inv.status] ?? ""}`}
+                        >
                           {INV_STATUS_LABELS[inv.status] ?? inv.status}
                         </Badge>
                       </div>
@@ -229,7 +233,9 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="text-right ml-3 shrink-0">
-                      <p className="text-sm font-medium tabular-nums">{formatCurrency(inv.total.toNumber())}</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatCurrency(inv.total.toNumber())}
+                      </p>
                       {inv.amountDue.toNumber() > 0 && inv.status !== "VOID" && (
                         <p className="text-xs text-destructive tabular-nums">
                           {formatCurrency(inv.amountDue.toNumber())} due

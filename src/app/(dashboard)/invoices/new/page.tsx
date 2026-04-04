@@ -54,12 +54,15 @@ export default async function NewInvoicePage({
         </div>
         <div className="rounded-xl border bg-card p-6 text-center space-y-4">
           <p className="text-sm text-muted-foreground">
-            This will create an invoice copying all {wo.lineItems.length} line item{wo.lineItems.length !== 1 ? "s" : ""} from the work order.
+            This will create an invoice copying all {wo.lineItems.length} line item
+            {wo.lineItems.length !== 1 ? "s" : ""} from the work order.
           </p>
-          <form action={async () => { await createFromWO() }}>
-            <Button type="submit">
-              Create Invoice from Work Order
-            </Button>
+          <form
+            action={async () => {
+              await createFromWO()
+            }}
+          >
+            <Button type="submit">Create Invoice from Work Order</Button>
           </form>
         </div>
       </div>
@@ -127,7 +130,15 @@ export default async function NewInvoicePage({
             </div>
             <div className="space-y-2">
               <Label htmlFor="taxRate">Tax rate (%)</Label>
-              <Input id="taxRate" name="taxRate" type="number" min="0" max="100" step="0.1" defaultValue="0" />
+              <Input
+                id="taxRate"
+                name="taxRate"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                defaultValue="0"
+              />
             </div>
           </div>
         </div>
@@ -142,7 +153,12 @@ export default async function NewInvoicePage({
         <div className="rounded-xl border bg-card p-6 space-y-2">
           <h2 className="font-medium mb-2">Notes</h2>
           <Label htmlFor="notes">Customer-visible notes</Label>
-          <Textarea id="notes" name="notes" placeholder="Payment terms, thank you message…" rows={3} />
+          <Textarea
+            id="notes"
+            name="notes"
+            placeholder="Payment terms, thank you message…"
+            rows={3}
+          />
         </div>
       </EstimateFormShell>
     </div>

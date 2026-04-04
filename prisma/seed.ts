@@ -48,7 +48,9 @@ async function main() {
   // ── Owner user ────────────────────────────────────────────
   const ownerSupabaseUid = process.env.SEED_SUPABASE_UID ?? "pending_owner_uid_" + Date.now()
 
-  let owner = await prisma.user.findFirst({ where: { tenantId: tenant.id, email: "owner@example.com" } })
+  let owner = await prisma.user.findFirst({
+    where: { tenantId: tenant.id, email: "owner@example.com" },
+  })
   if (!owner) {
     owner = await prisma.user.create({
       data: {
@@ -70,7 +72,9 @@ async function main() {
   console.log("✓ Owner:", owner.firstName, owner.lastName)
 
   // Tech user
-  let tech = await prisma.user.findFirst({ where: { tenantId: tenant.id, email: "tech@example.com" } })
+  let tech = await prisma.user.findFirst({
+    where: { tenantId: tenant.id, email: "tech@example.com" },
+  })
   if (!tech) {
     tech = await prisma.user.create({
       data: {
@@ -88,14 +92,35 @@ async function main() {
 
   // ── Customers ─────────────────────────────────────────────
   const customerData = [
-    { firstName: "Sarah", lastName: "Chen", email: "sarah.chen@example.com", phone: "(555) 201-3344", address: "456 Oak Ave", city: "Springfield", state: "IL", zip: "62702" },
-    { firstName: "Marcus", lastName: "Johnson", email: "marcus.johnson@example.com", phone: "(555) 444-9876" },
-    { firstName: "Priya", lastName: "Patel", email: "priya.patel@example.com", phone: "(555) 712-0011" },
+    {
+      firstName: "Sarah",
+      lastName: "Chen",
+      email: "sarah.chen@example.com",
+      phone: "(555) 201-3344",
+      address: "456 Oak Ave",
+      city: "Springfield",
+      state: "IL",
+      zip: "62702",
+    },
+    {
+      firstName: "Marcus",
+      lastName: "Johnson",
+      email: "marcus.johnson@example.com",
+      phone: "(555) 444-9876",
+    },
+    {
+      firstName: "Priya",
+      lastName: "Patel",
+      email: "priya.patel@example.com",
+      phone: "(555) 712-0011",
+    },
   ]
 
   const customers = await Promise.all(
     customerData.map(async (cd) => {
-      const existing = await prisma.customer.findFirst({ where: { tenantId: tenant.id, email: cd.email } })
+      const existing = await prisma.customer.findFirst({
+        where: { tenantId: tenant.id, email: cd.email },
+      })
       if (existing) return existing
       return prisma.customer.create({ data: { tenantId: tenant.id, ...cd } })
     })
@@ -104,14 +129,52 @@ async function main() {
 
   // ── Vehicles ──────────────────────────────────────────────
   const vehicleData = [
-    { customerId: customers[0].id, year: 2021, make: "Honda", model: "Accord", trim: "Sport", color: "Lunar Silver", vin: "1HGBH41JXMN109186", licensePlate: "ABC1234", mileage: 42500, engineSize: "1.5T", transmission: "AUTOMATIC" as const },
-    { customerId: customers[1].id, year: 2019, make: "Toyota", model: "Tundra", trim: "SR5", color: "Barcelona Red", vin: "5TFBW5F18AX104123", licensePlate: "TRK9988", mileage: 78000, engineSize: "5.7L V8", transmission: "AUTOMATIC" as const },
-    { customerId: customers[2].id, year: 2022, make: "BMW", model: "330i", trim: "xDrive", color: "Mineral Grey", vin: "WBANE535X5CM79789", licensePlate: "BMW2022", mileage: 18000, engineSize: "2.0T", transmission: "AUTOMATIC" as const },
+    {
+      customerId: customers[0].id,
+      year: 2021,
+      make: "Honda",
+      model: "Accord",
+      trim: "Sport",
+      color: "Lunar Silver",
+      vin: "1HGBH41JXMN109186",
+      licensePlate: "ABC1234",
+      mileage: 42500,
+      engineSize: "1.5T",
+      transmission: "AUTOMATIC" as const,
+    },
+    {
+      customerId: customers[1].id,
+      year: 2019,
+      make: "Toyota",
+      model: "Tundra",
+      trim: "SR5",
+      color: "Barcelona Red",
+      vin: "5TFBW5F18AX104123",
+      licensePlate: "TRK9988",
+      mileage: 78000,
+      engineSize: "5.7L V8",
+      transmission: "AUTOMATIC" as const,
+    },
+    {
+      customerId: customers[2].id,
+      year: 2022,
+      make: "BMW",
+      model: "330i",
+      trim: "xDrive",
+      color: "Mineral Grey",
+      vin: "WBANE535X5CM79789",
+      licensePlate: "BMW2022",
+      mileage: 18000,
+      engineSize: "2.0T",
+      transmission: "AUTOMATIC" as const,
+    },
   ]
 
   const vehicles = await Promise.all(
     vehicleData.map(async (vd) => {
-      const existing = await prisma.vehicle.findFirst({ where: { tenantId: tenant.id, vin: vd.vin } })
+      const existing = await prisma.vehicle.findFirst({
+        where: { tenantId: tenant.id, vin: vd.vin },
+      })
       if (existing) return existing
       return prisma.vehicle.create({ data: { tenantId: tenant.id, ...vd } })
     })
@@ -120,35 +183,119 @@ async function main() {
 
   // ── Inventory ─────────────────────────────────────────────
   const partsData = [
-    { partNumber: "OIL-5W30-5QT", name: "Motor Oil 5W-30 5qt", category: "Engine", brand: "Castrol", cost: 18.99, price: 34.99, qty: 24, reorderPoint: 4, reorderQty: 6 },
-    { partNumber: "FLTR-OIL-HONDA", name: "Oil Filter - Honda/Acura", category: "Filters", brand: "Denso", cost: 5.49, price: 12.99, qty: 18, reorderPoint: 3, reorderQty: 6 },
-    { partNumber: "FLTR-AIR-ACC", name: "Air Filter - Honda Accord", category: "Filters", brand: "OEM", cost: 12.99, price: 24.99, qty: 8, reorderPoint: 2, reorderQty: 4 },
-    { partNumber: "BRAKE-PAD-F-ACC", name: "Front Brake Pads - Honda Accord", category: "Brakes", brand: "Bosch", cost: 42.50, price: 89.99, qty: 6, reorderPoint: 2, reorderQty: 4 },
-    { partNumber: "BRAKE-ROTOR-F", name: "Front Brake Rotor - Pair", category: "Brakes", brand: "ACDelco", cost: 78.00, price: 159.99, qty: 4, reorderPoint: 1, reorderQty: 2 },
-    { partNumber: "SPARK-PLUG-NGK", name: "Spark Plug NGK Iridium", category: "Ignition", brand: "NGK", cost: 8.99, price: 18.99, qty: 32, reorderPoint: 8, reorderQty: 16 },
-    { partNumber: "COOLANT-OAT-1G", name: "Coolant OAT Pre-Mixed 1gal", category: "Fluids", brand: "Prestone", cost: 11.49, price: 22.99, qty: 12, reorderPoint: 3, reorderQty: 6 },
-    { partNumber: "WIPER-18-20", name: "Wiper Blade Set 18/20\"", category: "Accessories", brand: "Bosch", cost: 14.99, price: 29.99, qty: 1, reorderPoint: 2, reorderQty: 4 },
+    {
+      partNumber: "OIL-5W30-5QT",
+      name: "Motor Oil 5W-30 5qt",
+      category: "Engine",
+      brand: "Castrol",
+      cost: 18.99,
+      price: 34.99,
+      qty: 24,
+      reorderPoint: 4,
+      reorderQty: 6,
+    },
+    {
+      partNumber: "FLTR-OIL-HONDA",
+      name: "Oil Filter - Honda/Acura",
+      category: "Filters",
+      brand: "Denso",
+      cost: 5.49,
+      price: 12.99,
+      qty: 18,
+      reorderPoint: 3,
+      reorderQty: 6,
+    },
+    {
+      partNumber: "FLTR-AIR-ACC",
+      name: "Air Filter - Honda Accord",
+      category: "Filters",
+      brand: "OEM",
+      cost: 12.99,
+      price: 24.99,
+      qty: 8,
+      reorderPoint: 2,
+      reorderQty: 4,
+    },
+    {
+      partNumber: "BRAKE-PAD-F-ACC",
+      name: "Front Brake Pads - Honda Accord",
+      category: "Brakes",
+      brand: "Bosch",
+      cost: 42.5,
+      price: 89.99,
+      qty: 6,
+      reorderPoint: 2,
+      reorderQty: 4,
+    },
+    {
+      partNumber: "BRAKE-ROTOR-F",
+      name: "Front Brake Rotor - Pair",
+      category: "Brakes",
+      brand: "ACDelco",
+      cost: 78.0,
+      price: 159.99,
+      qty: 4,
+      reorderPoint: 1,
+      reorderQty: 2,
+    },
+    {
+      partNumber: "SPARK-PLUG-NGK",
+      name: "Spark Plug NGK Iridium",
+      category: "Ignition",
+      brand: "NGK",
+      cost: 8.99,
+      price: 18.99,
+      qty: 32,
+      reorderPoint: 8,
+      reorderQty: 16,
+    },
+    {
+      partNumber: "COOLANT-OAT-1G",
+      name: "Coolant OAT Pre-Mixed 1gal",
+      category: "Fluids",
+      brand: "Prestone",
+      cost: 11.49,
+      price: 22.99,
+      qty: 12,
+      reorderPoint: 3,
+      reorderQty: 6,
+    },
+    {
+      partNumber: "WIPER-18-20",
+      name: 'Wiper Blade Set 18/20"',
+      category: "Accessories",
+      brand: "Bosch",
+      cost: 14.99,
+      price: 29.99,
+      qty: 1,
+      reorderPoint: 2,
+      reorderQty: 4,
+    },
   ]
 
   const parts = await Promise.all(
-    partsData.map(async ({ partNumber, name, category, brand, cost, price, qty, reorderPoint, reorderQty }) => {
-      const existing = await prisma.inventoryItem.findFirst({ where: { tenantId: tenant.id, partNumber } })
-      if (existing) return existing
-      return prisma.inventoryItem.create({
-        data: {
-          tenantId: tenant.id,
-          partNumber,
-          name,
-          category,
-          brand,
-          cost: new Prisma.Decimal(cost),
-          price: new Prisma.Decimal(price),
-          quantityOnHand: qty,
-          reorderPoint,
-          reorderQuantity: reorderQty,
-        },
-      })
-    })
+    partsData.map(
+      async ({ partNumber, name, category, brand, cost, price, qty, reorderPoint, reorderQty }) => {
+        const existing = await prisma.inventoryItem.findFirst({
+          where: { tenantId: tenant.id, partNumber },
+        })
+        if (existing) return existing
+        return prisma.inventoryItem.create({
+          data: {
+            tenantId: tenant.id,
+            partNumber,
+            name,
+            category,
+            brand,
+            cost: new Prisma.Decimal(cost),
+            price: new Prisma.Decimal(price),
+            quantityOnHand: qty,
+            reorderPoint,
+            reorderQuantity: reorderQty,
+          },
+        })
+      }
+    )
   )
   console.log("✓ Inventory:", parts.length, "parts")
 

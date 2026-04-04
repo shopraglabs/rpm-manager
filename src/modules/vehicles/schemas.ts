@@ -21,10 +21,7 @@ export const vehicleSchema = z.object({
   licensePlate: z.string().optional().or(z.literal("")),
   color: z.string().optional().or(z.literal("")),
   engineSize: z.string().optional().or(z.literal("")),
-  transmission: z
-    .enum(["AUTOMATIC", "MANUAL", "CVT", "OTHER"])
-    .optional()
-    .or(z.literal("")),
+  transmission: z.enum(["AUTOMATIC", "MANUAL", "CVT", "OTHER"]).optional().or(z.literal("")),
   mileage: z
     .string()
     .optional()

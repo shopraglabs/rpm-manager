@@ -15,10 +15,7 @@ const signInSchema = z.object({
 
 type ActionState = { error: string | null }
 
-export async function signIn(
-  _prevState: ActionState,
-  formData: FormData
-): Promise<ActionState> {
+export async function signIn(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const raw = Object.fromEntries(formData)
   const parsed = signInSchema.safeParse(raw)
 
@@ -49,10 +46,7 @@ const signUpSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 })
 
-export async function signUp(
-  _prevState: ActionState,
-  formData: FormData
-): Promise<ActionState> {
+export async function signUp(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const raw = Object.fromEntries(formData)
   const parsed = signUpSchema.safeParse(raw)
 

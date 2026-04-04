@@ -69,35 +69,39 @@ export default async function InspectionsPage() {
             <thead className="border-b bg-muted/40">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Vehicle</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Work Order</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Technician</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Conditions</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">
+                  Work Order
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
+                  Technician
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                  Conditions
+                </th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Date</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
+                  Date
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {inspections.map((insp) => {
-                const conditionCounts = insp.items.reduce<Record<string, number>>(
-                  (acc, item) => {
-                    acc[item.condition] = (acc[item.condition] ?? 0) + 1
-                    return acc
-                  },
-                  {}
-                )
+                const conditionCounts = insp.items.reduce<Record<string, number>>((acc, item) => {
+                  acc[item.condition] = (acc[item.condition] ?? 0) + 1
+                  return acc
+                }, {})
 
-                const vehicleLabel = [
-                  insp.vehicle.year,
-                  insp.vehicle.make,
-                  insp.vehicle.model,
-                ]
+                const vehicleLabel = [insp.vehicle.year, insp.vehicle.make, insp.vehicle.model]
                   .filter(Boolean)
                   .join(" ")
 
                 return (
                   <tr key={insp.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
-                      <Link href={`/inspections/${insp.id}`} className="font-medium hover:underline">
+                      <Link
+                        href={`/inspections/${insp.id}`}
+                        className="font-medium hover:underline"
+                      >
                         {vehicleLabel || "Unknown"}
                       </Link>
                     </td>
@@ -127,7 +131,10 @@ export default async function InspectionsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant="outline" className={`text-xs ${STATUS_COLORS[insp.status] ?? ""}`}>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${STATUS_COLORS[insp.status] ?? ""}`}
+                      >
                         {STATUS_LABELS[insp.status] ?? insp.status}
                       </Badge>
                     </td>

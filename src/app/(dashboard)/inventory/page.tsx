@@ -21,14 +21,16 @@ export default async function InventoryPage({
   const { tenantId } = await requireAuth()
   const currentPage = page ? parseInt(page) : 1
 
-  const searchWhere = search ? {
-    OR: [
-      { name: { contains: search, mode: "insensitive" as const } },
-      { partNumber: { contains: search, mode: "insensitive" as const } },
-      { brand: { contains: search, mode: "insensitive" as const } },
-      { category: { contains: search, mode: "insensitive" as const } },
-    ],
-  } : {}
+  const searchWhere = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { partNumber: { contains: search, mode: "insensitive" as const } },
+          { brand: { contains: search, mode: "insensitive" as const } },
+          { category: { contains: search, mode: "insensitive" as const } },
+        ],
+      }
+    : {}
 
   const itemsWhere = {
     tenantId,
@@ -88,7 +90,12 @@ export default async function InventoryPage({
       {items.length === 0 ? (
         <div className="rounded-xl border bg-card p-12 text-center">
           <p className="text-muted-foreground text-sm">No inventory items yet.</p>
-          <Button variant="outline" size="sm" className="mt-4" render={<Link href="/inventory/new" />}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4"
+            render={<Link href="/inventory/new" />}
+          >
             Add first part
           </Button>
         </div>
@@ -98,10 +105,16 @@ export default async function InventoryPage({
             <thead className="border-b bg-muted/40">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Part</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Brand</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Category</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">
+                  Brand
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
+                  Category
+                </th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">Stock</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Cost</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">
+                  Cost
+                </th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">Price</th>
               </tr>
             </thead>
@@ -122,15 +135,23 @@ export default async function InventoryPage({
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
                       {item.category ? (
-                        <Badge variant="outline" className="text-xs">{item.category}</Badge>
-                      ) : "—"}
+                        <Badge variant="outline" className="text-xs">
+                          {item.category}
+                        </Badge>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {(isOut || isLow) && (
-                          <AlertTriangle className={`h-3.5 w-3.5 ${isOut ? "text-destructive" : "text-orange-500"}`} />
+                          <AlertTriangle
+                            className={`h-3.5 w-3.5 ${isOut ? "text-destructive" : "text-orange-500"}`}
+                          />
                         )}
-                        <span className={`font-medium tabular-nums ${isOut ? "text-destructive" : isLow ? "text-orange-600" : ""}`}>
+                        <span
+                          className={`font-medium tabular-nums ${isOut ? "text-destructive" : isLow ? "text-orange-600" : ""}`}
+                        >
                           {item.quantityOnHand}
                         </span>
                       </div>

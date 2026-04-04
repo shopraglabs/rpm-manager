@@ -78,7 +78,12 @@ export default async function AppointmentsPage({
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Appointments</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            {viewDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+            {viewDate.toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
             {isToday && <span className="ml-2 text-primary font-medium">Today</span>}
           </p>
         </div>
@@ -90,7 +95,11 @@ export default async function AppointmentsPage({
 
       {/* Date navigation */}
       <div className="flex items-center gap-2 mb-6">
-        <Button variant="outline" size="sm" render={<Link href={`/appointments?date=${toDateStr(prevDate)}`} />}>
+        <Button
+          variant="outline"
+          size="sm"
+          render={<Link href={`/appointments?date=${toDateStr(prevDate)}`} />}
+        >
           <ChevronLeft className="h-4 w-4" />
         </Button>
         {!isToday && (
@@ -98,7 +107,11 @@ export default async function AppointmentsPage({
             Today
           </Button>
         )}
-        <Button variant="outline" size="sm" render={<Link href={`/appointments?date=${toDateStr(nextDate)}`} />}>
+        <Button
+          variant="outline"
+          size="sm"
+          render={<Link href={`/appointments?date=${toDateStr(nextDate)}`} />}
+        >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -108,7 +121,12 @@ export default async function AppointmentsPage({
         {appointments.length === 0 ? (
           <div className="p-12 text-center">
             <p className="text-muted-foreground text-sm">No appointments scheduled.</p>
-            <Button variant="outline" size="sm" className="mt-4" render={<Link href="/appointments/new" />}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              render={<Link href="/appointments/new" />}
+            >
               Schedule appointment
             </Button>
           </div>
@@ -138,7 +156,10 @@ export default async function AppointmentsPage({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-medium text-sm">{apt.title}</p>
-                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${STATUS_COLORS[apt.status] ?? ""}`}>
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] px-1.5 py-0 ${STATUS_COLORS[apt.status] ?? ""}`}
+                      >
                         {STATUS_LABELS[apt.status] ?? apt.status}
                       </Badge>
                     </div>
@@ -148,7 +169,8 @@ export default async function AppointmentsPage({
                     )}
                     {apt.vehicle && (
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {apt.vehicle.year ? `${apt.vehicle.year} ` : ""}{apt.vehicle.make} {apt.vehicle.model}
+                        {apt.vehicle.year ? `${apt.vehicle.year} ` : ""}
+                        {apt.vehicle.make} {apt.vehicle.model}
                       </p>
                     )}
                     {apt.assignedTo && (
@@ -164,28 +186,53 @@ export default async function AppointmentsPage({
                   {/* Actions */}
                   <div className="flex items-center gap-1.5 shrink-0">
                     {apt.status === "SCHEDULED" && (
-                      <form action={async () => { await confirmWithId() }}>
-                        <Button type="submit" size="sm" variant="outline">Confirm</Button>
+                      <form
+                        action={async () => {
+                          await confirmWithId()
+                        }}
+                      >
+                        <Button type="submit" size="sm" variant="outline">
+                          Confirm
+                        </Button>
                       </form>
                     )}
                     {apt.status === "CONFIRMED" && (
-                      <form action={async () => { await arrivedWithId() }}>
-                        <Button type="submit" size="sm" variant="outline">Arrived</Button>
+                      <form
+                        action={async () => {
+                          await arrivedWithId()
+                        }}
+                      >
+                        <Button type="submit" size="sm" variant="outline">
+                          Arrived
+                        </Button>
                       </form>
                     )}
                     {["SCHEDULED", "CONFIRMED"].includes(apt.status) && (
-                      <form action={async () => { await noShowWithId() }}>
-                        <Button type="submit" size="sm" variant="destructive">No Show</Button>
+                      <form
+                        action={async () => {
+                          await noShowWithId()
+                        }}
+                      >
+                        <Button type="submit" size="sm" variant="destructive">
+                          No Show
+                        </Button>
                       </form>
                     )}
                     {!["COMPLETED", "CANCELLED", "NO_SHOW"].includes(apt.status) && (
                       <form
-                        action={async () => { await deleteWithId() }}
+                        action={async () => {
+                          await deleteWithId()
+                        }}
                         onSubmit={(e) => {
                           if (!confirm("Delete this appointment?")) e.preventDefault()
                         }}
                       >
-                        <Button type="submit" size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive">
+                        <Button
+                          type="submit"
+                          size="sm"
+                          variant="ghost"
+                          className="text-muted-foreground hover:text-destructive"
+                        >
                           ×
                         </Button>
                       </form>

@@ -77,13 +77,10 @@ export default async function WorkOrdersPage({
   if (isBoard) {
     const allWorkOrders = await getBoardWorkOrders()
 
-    const byStatus = BOARD_COLUMNS.reduce<Record<string, typeof allWorkOrders>>(
-      (acc, col) => {
-        acc[col] = allWorkOrders.filter((wo) => wo.status === col)
-        return acc
-      },
-      {}
-    )
+    const byStatus = BOARD_COLUMNS.reduce<Record<string, typeof allWorkOrders>>((acc, col) => {
+      acc[col] = allWorkOrders.filter((wo) => wo.status === col)
+      return acc
+    }, {})
 
     return (
       <div>
@@ -91,16 +88,19 @@ export default async function WorkOrdersPage({
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Work Orders</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">
-              {allWorkOrders.length} active
-            </p>
+            <p className="text-muted-foreground text-sm mt-0.5">{allWorkOrders.length} active</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" render={<Link href="/work-orders" />}>
               <List className="h-4 w-4 mr-2" />
               List
             </Button>
-            <Button variant="outline" size="sm" render={<Link href="/work-orders?view=board" />} className="bg-muted">
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href="/work-orders?view=board" />}
+              className="bg-muted"
+            >
               <LayoutGrid className="h-4 w-4 mr-2" />
               Board
             </Button>
@@ -204,7 +204,12 @@ export default async function WorkOrdersPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" render={<Link href="/work-orders" />} className="bg-muted">
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href="/work-orders" />}
+            className="bg-muted"
+          >
             <List className="h-4 w-4 mr-2" />
             List
           </Button>
@@ -226,7 +231,12 @@ export default async function WorkOrdersPage({
       {result.items.length === 0 ? (
         <div className="rounded-xl border bg-card p-12 text-center">
           <p className="text-muted-foreground text-sm">No work orders yet.</p>
-          <Button variant="outline" size="sm" className="mt-4" render={<Link href="/work-orders/new" />}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4"
+            render={<Link href="/work-orders/new" />}
+          >
             Create first work order
           </Button>
         </div>
@@ -236,18 +246,29 @@ export default async function WorkOrdersPage({
             <thead className="border-b bg-muted/40">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Number</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Vehicle</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">
+                  Vehicle
+                </th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Priority</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Assigned</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Date</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
+                  Priority
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
+                  Assigned
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
+                  Date
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {result.items.map((wo) => (
                 <tr key={wo.id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3">
-                    <Link href={`/work-orders/${wo.id}`} className="font-mono font-medium hover:underline block">
+                    <Link
+                      href={`/work-orders/${wo.id}`}
+                      className="font-mono font-medium hover:underline block"
+                    >
                       {wo.orderNumber}
                     </Link>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -255,7 +276,8 @@ export default async function WorkOrdersPage({
                     </p>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
-                    {wo.vehicle.year ? `${wo.vehicle.year} ` : ""}{wo.vehicle.make} {wo.vehicle.model}
+                    {wo.vehicle.year ? `${wo.vehicle.year} ` : ""}
+                    {wo.vehicle.make} {wo.vehicle.model}
                     {wo.vehicle.licensePlate && (
                       <span className="ml-1 text-xs">({wo.vehicle.licensePlate})</span>
                     )}
@@ -265,13 +287,13 @@ export default async function WorkOrdersPage({
                       {STATUS_LABELS[wo.status] ?? wo.status}
                     </Badge>
                   </td>
-                  <td className={`px-4 py-3 hidden lg:table-cell text-xs ${PRIORITY_COLORS[wo.priority] ?? ""}`}>
+                  <td
+                    className={`px-4 py-3 hidden lg:table-cell text-xs ${PRIORITY_COLORS[wo.priority] ?? ""}`}
+                  >
                     {wo.priority}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground text-xs hidden lg:table-cell">
-                    {wo.assignedTo
-                      ? `${wo.assignedTo.firstName} ${wo.assignedTo.lastName}`
-                      : "—"}
+                    {wo.assignedTo ? `${wo.assignedTo.firstName} ${wo.assignedTo.lastName}` : "—"}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
                     {formatDate(wo.createdAt)}

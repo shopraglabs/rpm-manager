@@ -86,7 +86,13 @@ export default function NewInventoryItemPage() {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="quantityOnHand">Qty on hand</Label>
-              <Input id="quantityOnHand" name="quantityOnHand" type="number" min="0" defaultValue="0" />
+              <Input
+                id="quantityOnHand"
+                name="quantityOnHand"
+                type="number"
+                min="0"
+                defaultValue="0"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="reorderPoint">Reorder point</Label>
@@ -94,7 +100,13 @@ export default function NewInventoryItemPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="reorderQuantity">Reorder qty</Label>
-              <Input id="reorderQuantity" name="reorderQuantity" type="number" min="0" defaultValue="0" />
+              <Input
+                id="reorderQuantity"
+                name="reorderQuantity"
+                type="number"
+                min="0"
+                defaultValue="0"
+              />
             </div>
           </div>
         </div>

@@ -46,7 +46,8 @@ export default async function UsersPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Team Members</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            {users.filter(u => u.isActive).length} active · {users.filter(u => !u.isActive).length} inactive
+            {users.filter((u) => u.isActive).length} active ·{" "}
+            {users.filter((u) => !u.isActive).length} inactive
           </p>
         </div>
       </div>
@@ -61,7 +62,10 @@ export default async function UsersPage() {
       <div className="rounded-xl border bg-card overflow-hidden">
         <ul className="divide-y">
           {users.map((u) => (
-            <li key={u.id} className={`px-5 py-4 flex items-center justify-between gap-4 ${!u.isActive ? "opacity-60" : ""}`}>
+            <li
+              key={u.id}
+              className={`px-5 py-4 flex items-center justify-between gap-4 ${!u.isActive ? "opacity-60" : ""}`}
+            >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-sm">
@@ -70,11 +74,17 @@ export default async function UsersPage() {
                       <span className="text-xs text-muted-foreground ml-1">(you)</span>
                     )}
                   </p>
-                  <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${ROLE_COLORS[u.role] ?? ""}`}>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] px-1.5 py-0 ${ROLE_COLORS[u.role] ?? ""}`}
+                  >
                     {ROLE_LABELS[u.role] ?? u.role}
                   </Badge>
                   {!u.isActive && (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-muted text-muted-foreground">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0 bg-muted text-muted-foreground"
+                    >
                       {u.supabaseUid.startsWith("pending_") ? "Invited" : "Inactive"}
                     </Badge>
                   )}

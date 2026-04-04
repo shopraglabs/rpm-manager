@@ -8,6 +8,8 @@ import { requirePermission } from "@/lib/auth/permissions"
 import { estimateSchema } from "./schemas"
 import { calculateTotals, parseLineItemsFromFormData } from "./utils"
 import { generateEstimateNumber, generateShareToken } from "@/lib/utils/sequence"
+import { emailProvider, estimateEmail } from "@/lib/integrations/email"
+import { formatCurrency } from "@/lib/utils/format"
 
 export async function createEstimate(formData: FormData) {
   const { tenantId, id: userId, role } = await requireAuth()
@@ -158,7 +160,13 @@ export async function sendEstimate(id: string) {
   const { tenantId, role } = await requireAuth()
   requirePermission(role, "estimates:send")
 
-  const existing = await prisma.estimate.findFirst({ where: { id, tenantId } })
+  const existing = await prisma.estimate.findFirst({
+    where: { id, tenantId },
+    include: {
+      customer: true,
+      vehicle: true,
+    },
+  })
   if (!existing) return { error: "Estimate not found" }
   if (existing.status === "CONVERTED") return { error: "Estimate already converted" }
 
@@ -166,22 +174,43 @@ export async function sendEstimate(id: string) {
 
   await prisma.estimate.update({
     where: { id },
-    data: {
-      status: "SENT",
-      sentAt: new Date(),
-      shareToken,
-    },
+    data: { status: "SENT", sentAt: new Date(), shareToken },
   })
+
+  // Send email if customer has an email address
+  if (existing.customer.email) {
+    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } })
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+    const vehicleLabel = [existing.vehicle.year, existing.vehicle.make, existing.vehicle.model]
+      .filter(Boolean)
+      .join(" ")
+
+    const { subject, html } = estimateEmail({
+      shopName: tenant?.name ?? "Your Auto Shop",
+      shopPhone: tenant?.phone,
+      shopEmail: tenant?.email,
+      customerFirstName: existing.customer.firstName,
+      estimateNumber: existing.estimateNumber,
+      vehicleLabel: vehicleLabel || "your vehicle",
+      subtotal: formatCurrency(existing.subtotal.toNumber()),
+      total: formatCurrency(existing.total.toNumber()),
+      portalUrl: `${appUrl}/customer-portal/estimates/${shareToken}`,
+    })
+
+    await emailProvider.send({
+      to: existing.customer.email,
+      subject,
+      html,
+      replyTo: tenant?.email ?? undefined,
+    })
+  }
 
   revalidatePath(`/estimates/${id}`)
   return { shareToken }
 }
 
 /** Called from the customer portal (public, no auth) */
-export async function respondToEstimate(
-  token: string,
-  response: "APPROVED" | "DECLINED"
-) {
+export async function respondToEstimate(token: string, response: "APPROVED" | "DECLINED") {
   const estimate = await prisma.estimate.findUnique({ where: { shareToken: token } })
   if (!estimate) return { error: "Estimate not found" }
   if (!["SENT", "VIEWED"].includes(estimate.status)) {

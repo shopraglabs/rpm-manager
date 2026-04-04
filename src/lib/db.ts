@@ -23,27 +23,63 @@ export function createTenantPrisma(tenantId: string) {
   return basePrisma.$extends({
     query: {
       $allModels: {
-        async findMany({ args, query }: { args: Record<string, unknown>; query: (args: Record<string, unknown>) => unknown }) {
+        async findMany({
+          args,
+          query,
+        }: {
+          args: Record<string, unknown>
+          query: (args: Record<string, unknown>) => unknown
+        }) {
           args.where = { ...(args.where as Record<string, unknown>), tenantId }
           return query(args)
         },
-        async findFirst({ args, query }: { args: Record<string, unknown>; query: (args: Record<string, unknown>) => unknown }) {
+        async findFirst({
+          args,
+          query,
+        }: {
+          args: Record<string, unknown>
+          query: (args: Record<string, unknown>) => unknown
+        }) {
           args.where = { ...(args.where as Record<string, unknown>), tenantId }
           return query(args)
         },
-        async create({ args, query }: { args: Record<string, unknown>; query: (args: Record<string, unknown>) => unknown }) {
+        async create({
+          args,
+          query,
+        }: {
+          args: Record<string, unknown>
+          query: (args: Record<string, unknown>) => unknown
+        }) {
           args.data = { ...(args.data as Record<string, unknown>), tenantId }
           return query(args)
         },
-        async update({ args, query }: { args: Record<string, unknown>; query: (args: Record<string, unknown>) => unknown }) {
+        async update({
+          args,
+          query,
+        }: {
+          args: Record<string, unknown>
+          query: (args: Record<string, unknown>) => unknown
+        }) {
           args.where = { ...(args.where as Record<string, unknown>), tenantId }
           return query(args)
         },
-        async delete({ args, query }: { args: Record<string, unknown>; query: (args: Record<string, unknown>) => unknown }) {
+        async delete({
+          args,
+          query,
+        }: {
+          args: Record<string, unknown>
+          query: (args: Record<string, unknown>) => unknown
+        }) {
           args.where = { ...(args.where as Record<string, unknown>), tenantId }
           return query(args)
         },
-        async count({ args, query }: { args: Record<string, unknown>; query: (args: Record<string, unknown>) => unknown }) {
+        async count({
+          args,
+          query,
+        }: {
+          args: Record<string, unknown>
+          query: (args: Record<string, unknown>) => unknown
+        }) {
           args.where = { ...(args.where as Record<string, unknown>), tenantId }
           return query(args)
         },

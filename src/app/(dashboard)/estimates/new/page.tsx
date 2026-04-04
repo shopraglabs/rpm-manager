@@ -36,9 +36,7 @@ export default async function NewEstimatePage({
     },
   })
 
-  const customerVehicles = Object.fromEntries(
-    customers.map((c) => [c.id, c.vehicles])
-  )
+  const customerVehicles = Object.fromEntries(customers.map((c) => [c.id, c.vehicles]))
 
   return (
     <div className="max-w-4xl">

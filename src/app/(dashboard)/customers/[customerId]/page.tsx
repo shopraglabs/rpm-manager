@@ -67,7 +67,9 @@ export default async function CustomerDetailPage({
                     <a href={`tel:${customer.phone}`} className="hover:underline">
                       {formatPhone(customer.phone)}
                     </a>
-                  ) : "—"}
+                  ) : (
+                    "—"
+                  )}
                 </dd>
               </div>
               <div>
@@ -77,7 +79,9 @@ export default async function CustomerDetailPage({
                     <a href={`mailto:${customer.email}`} className="hover:underline">
                       {customer.email}
                     </a>
-                  ) : "—"}
+                  ) : (
+                    "—"
+                  )}
                 </dd>
               </div>
               <div>
@@ -85,12 +89,13 @@ export default async function CustomerDetailPage({
                 <dd className="font-medium mt-0.5">
                   {customer.address ? (
                     <span>
-                      {customer.address}<br />
-                      {[customer.city, customer.state, customer.zip]
-                        .filter(Boolean)
-                        .join(", ")}
+                      {customer.address}
+                      <br />
+                      {[customer.city, customer.state, customer.zip].filter(Boolean).join(", ")}
                     </span>
-                  ) : "—"}
+                  ) : (
+                    "—"
+                  )}
                 </dd>
               </div>
               <div>
@@ -113,7 +118,11 @@ export default async function CustomerDetailPage({
           <div className="rounded-xl border bg-card p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-medium">Vehicles</h2>
-              <Button variant="outline" size="sm" render={<Link href={`/customers/${customer.id}/vehicles/new`} />}>
+              <Button
+                variant="outline"
+                size="sm"
+                render={<Link href={`/customers/${customer.id}/vehicles/new`} />}
+              >
                 <Plus className="h-4 w-4 mr-1.5" />
                 Add Vehicle
               </Button>
@@ -123,7 +132,12 @@ export default async function CustomerDetailPage({
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <Car className="h-10 w-10 text-muted-foreground/40 mb-3" />
                 <p className="text-muted-foreground text-sm">No vehicles on file.</p>
-                <Button variant="outline" size="sm" className="mt-3" render={<Link href={`/customers/${customer.id}/vehicles/new`} />}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-3"
+                  render={<Link href={`/customers/${customer.id}/vehicles/new`} />}
+                >
                   Add first vehicle
                 </Button>
               </div>
@@ -156,7 +170,9 @@ export default async function CustomerDetailPage({
       </div>
 
       {/* Service History */}
-      {(customer.estimates.length > 0 || customer.workOrders.length > 0 || customer.invoices.length > 0) && (
+      {(customer.estimates.length > 0 ||
+        customer.workOrders.length > 0 ||
+        customer.invoices.length > 0) && (
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Estimates */}
           {customer.estimates.length > 0 && (
@@ -175,12 +191,17 @@ export default async function CustomerDetailPage({
                     <div>
                       <span className="text-xs font-mono">{est.estimateNumber}</span>
                       <p className="text-xs text-muted-foreground">
-                        {est.vehicle.year} {est.vehicle.make} {est.vehicle.model} · {formatDate(est.createdAt)}
+                        {est.vehicle.year} {est.vehicle.make} {est.vehicle.model} ·{" "}
+                        {formatDate(est.createdAt)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium tabular-nums">{formatCurrency(est.total.toNumber())}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{est.status.toLowerCase()}</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatCurrency(est.total.toNumber())}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {est.status.toLowerCase()}
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -205,12 +226,17 @@ export default async function CustomerDetailPage({
                     <div>
                       <span className="text-xs font-mono">{wo.orderNumber}</span>
                       <p className="text-xs text-muted-foreground">
-                        {wo.vehicle.year} {wo.vehicle.make} {wo.vehicle.model} · {formatDate(wo.createdAt)}
+                        {wo.vehicle.year} {wo.vehicle.make} {wo.vehicle.model} ·{" "}
+                        {formatDate(wo.createdAt)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium tabular-nums">{formatCurrency(wo.total.toNumber())}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{wo.status.toLowerCase().replace("_", " ")}</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatCurrency(wo.total.toNumber())}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {wo.status.toLowerCase().replace("_", " ")}
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -237,13 +263,15 @@ export default async function CustomerDetailPage({
                       <p className="text-xs text-muted-foreground">{formatDate(inv.createdAt)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium tabular-nums">{formatCurrency(inv.total.toNumber())}</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatCurrency(inv.total.toNumber())}
+                      </p>
                       {inv.amountDue.toNumber() > 0 && inv.status !== "PAID" && (
-                        <p className="text-xs text-orange-600">Due: {formatCurrency(inv.amountDue.toNumber())}</p>
+                        <p className="text-xs text-orange-600">
+                          Due: {formatCurrency(inv.amountDue.toNumber())}
+                        </p>
                       )}
-                      {inv.status === "PAID" && (
-                        <p className="text-xs text-green-600">Paid</p>
-                      )}
+                      {inv.status === "PAID" && <p className="text-xs text-green-600">Paid</p>}
                     </div>
                   </Link>
                 ))}

@@ -26,7 +26,8 @@ export default async function EditVehiclePage({
       <div className="flex items-center gap-3 mb-6">
         <Button variant="ghost" size="sm" render={<Link href={`/vehicles/${vehicleId}`} />}>
           <ChevronLeft className="h-4 w-4" />
-          {vehicle.year ? `${vehicle.year} ` : ""}{vehicle.make} {vehicle.model}
+          {vehicle.year ? `${vehicle.year} ` : ""}
+          {vehicle.make} {vehicle.model}
         </Button>
       </div>
 
@@ -35,11 +36,7 @@ export default async function EditVehiclePage({
       </div>
 
       <div className="rounded-xl border bg-card p-6">
-        <VehicleForm
-          action={updateWithId}
-          defaultValues={vehicle}
-          deleteAction={deleteWithId}
-        />
+        <VehicleForm action={updateWithId} defaultValues={vehicle} deleteAction={deleteWithId} />
       </div>
     </div>
   )

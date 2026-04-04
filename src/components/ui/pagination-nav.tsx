@@ -58,7 +58,9 @@ export function PaginationNav({
 
         {pages.map((p, i) =>
           p === "ellipsis" ? (
-            <span key={`ellipsis-${i}`} className="px-1.5">…</span>
+            <span key={`ellipsis-${i}`} className="px-1.5">
+              …
+            </span>
           ) : (
             <Link
               key={p}

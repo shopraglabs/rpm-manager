@@ -31,9 +31,10 @@ export default async function InventoryItemPage({
   const updateWithId = updateInventoryItem.bind(null, itemId)
   const deleteWithId = deleteInventoryItem.bind(null, itemId)
 
-  const margin = item.cost.toNumber() > 0
-    ? (((item.price.toNumber() - item.cost.toNumber()) / item.cost.toNumber()) * 100).toFixed(1)
-    : null
+  const margin =
+    item.cost.toNumber() > 0
+      ? (((item.price.toNumber() - item.cost.toNumber()) / item.cost.toNumber()) * 100).toFixed(1)
+      : null
 
   return (
     <div className="max-w-2xl">
@@ -55,18 +56,24 @@ export default async function InventoryItemPage({
       <div className="rounded-xl border bg-card p-5 grid grid-cols-3 gap-4 text-sm mb-6">
         <div>
           <p className="text-muted-foreground">On hand</p>
-          <p className={`text-2xl font-bold mt-0.5 tabular-nums ${item.quantityOnHand === 0 ? "text-destructive" : item.quantityOnHand <= item.reorderPoint ? "text-orange-600" : ""}`}>
+          <p
+            className={`text-2xl font-bold mt-0.5 tabular-nums ${item.quantityOnHand === 0 ? "text-destructive" : item.quantityOnHand <= item.reorderPoint ? "text-orange-600" : ""}`}
+          >
             {item.quantityOnHand}
           </p>
         </div>
         <div>
           <p className="text-muted-foreground">Cost / Price</p>
-          <p className="font-semibold mt-0.5">{formatCurrency(item.cost.toNumber())} / {formatCurrency(item.price.toNumber())}</p>
+          <p className="font-semibold mt-0.5">
+            {formatCurrency(item.cost.toNumber())} / {formatCurrency(item.price.toNumber())}
+          </p>
           {margin && <p className="text-xs text-muted-foreground">{margin}% margin</p>}
         </div>
         <div>
           <p className="text-muted-foreground">Reorder at</p>
-          <p className="font-semibold mt-0.5">{item.reorderPoint} (order {item.reorderQuantity})</p>
+          <p className="font-semibold mt-0.5">
+            {item.reorderPoint} (order {item.reorderQuantity})
+          </p>
         </div>
       </div>
 
@@ -81,12 +88,16 @@ export default async function InventoryItemPage({
         submitLabel="Save Changes"
         deleteSlot={
           <form
-            action={async () => { await deleteWithId() }}
+            action={async () => {
+              await deleteWithId()
+            }}
             onSubmit={(e) => {
               if (!confirm("Delete this part? This cannot be undone.")) e.preventDefault()
             }}
           >
-            <Button type="submit" variant="destructive" size="sm">Delete Part</Button>
+            <Button type="submit" variant="destructive" size="sm">
+              Delete Part
+            </Button>
           </form>
         }
       >
@@ -122,32 +133,69 @@ export default async function InventoryItemPage({
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <Textarea id="description" name="description" defaultValue={item.description ?? ""} rows={2} />
+            <Textarea
+              id="description"
+              name="description"
+              defaultValue={item.description ?? ""}
+              rows={2}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="cost">Cost</Label>
-              <Input id="cost" name="cost" type="number" min="0" step="0.01" defaultValue={item.cost.toNumber()} />
+              <Input
+                id="cost"
+                name="cost"
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue={item.cost.toNumber()}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="price">Sell price</Label>
-              <Input id="price" name="price" type="number" min="0" step="0.01" defaultValue={item.price.toNumber()} />
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue={item.price.toNumber()}
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="quantityOnHand">Qty on hand</Label>
-              <Input id="quantityOnHand" name="quantityOnHand" type="number" min="0" defaultValue={item.quantityOnHand} />
+              <Input
+                id="quantityOnHand"
+                name="quantityOnHand"
+                type="number"
+                min="0"
+                defaultValue={item.quantityOnHand}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="reorderPoint">Reorder point</Label>
-              <Input id="reorderPoint" name="reorderPoint" type="number" min="0" defaultValue={item.reorderPoint} />
+              <Input
+                id="reorderPoint"
+                name="reorderPoint"
+                type="number"
+                min="0"
+                defaultValue={item.reorderPoint}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="reorderQuantity">Reorder qty</Label>
-              <Input id="reorderQuantity" name="reorderQuantity" type="number" min="0" defaultValue={item.reorderQuantity} />
+              <Input
+                id="reorderQuantity"
+                name="reorderQuantity"
+                type="number"
+                min="0"
+                defaultValue={item.reorderQuantity}
+              />
             </div>
           </div>
         </div>

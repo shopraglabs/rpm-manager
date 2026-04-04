@@ -36,7 +36,15 @@ export default async function CustomerInvoicePage({
   // Load shop info
   const tenant = await prisma.tenant.findUnique({
     where: { id: invoice.tenantId },
-    select: { name: true, phone: true, email: true, address: true, city: true, state: true, zip: true },
+    select: {
+      name: true,
+      phone: true,
+      email: true,
+      address: true,
+      city: true,
+      state: true,
+      zip: true,
+    },
   })
 
   const isPaid = invoice.status === "PAID"
@@ -73,7 +81,9 @@ export default async function CustomerInvoicePage({
             <div>
               <p className="font-medium text-green-800">Paid in Full</p>
               {invoice.paidAt && (
-                <p className="text-sm text-green-700">Payment received {formatDate(invoice.paidAt)}</p>
+                <p className="text-sm text-green-700">
+                  Payment received {formatDate(invoice.paidAt)}
+                </p>
               )}
             </div>
           </div>
@@ -83,9 +93,7 @@ export default async function CustomerInvoicePage({
             <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
             <div>
               <p className="font-medium text-red-800">Payment Overdue</p>
-              <p className="text-sm text-red-700">
-                Please contact us to arrange payment.
-              </p>
+              <p className="text-sm text-red-700">Please contact us to arrange payment.</p>
             </div>
           </div>
         )}
@@ -105,7 +113,9 @@ export default async function CustomerInvoicePage({
         <div className="rounded-xl border bg-card p-5 grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Customer</p>
-            <p className="font-medium">{invoice.customer.firstName} {invoice.customer.lastName}</p>
+            <p className="font-medium">
+              {invoice.customer.firstName} {invoice.customer.lastName}
+            </p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Invoice #</p>
@@ -120,7 +130,9 @@ export default async function CustomerInvoicePage({
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Status</p>
             <p className="font-medium capitalize">
-              {invoice.status === "PARTIALLY_PAID" ? "Partially Paid" : invoice.status.charAt(0) + invoice.status.slice(1).toLowerCase()}
+              {invoice.status === "PARTIALLY_PAID"
+                ? "Partially Paid"
+                : invoice.status.charAt(0) + invoice.status.slice(1).toLowerCase()}
             </p>
           </div>
         </div>
@@ -133,8 +145,12 @@ export default async function CustomerInvoicePage({
           <table className="w-full text-sm">
             <thead className="bg-muted/30 border-b">
               <tr>
-                <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">Description</th>
-                <th className="text-right px-3 py-2.5 font-medium text-muted-foreground hidden sm:table-cell">Qty</th>
+                <th className="text-left px-5 py-2.5 font-medium text-muted-foreground">
+                  Description
+                </th>
+                <th className="text-right px-3 py-2.5 font-medium text-muted-foreground hidden sm:table-cell">
+                  Qty
+                </th>
                 <th className="text-right px-5 py-2.5 font-medium text-muted-foreground">Total</th>
               </tr>
             </thead>
@@ -178,11 +194,15 @@ export default async function CustomerInvoicePage({
               <>
                 <div className="flex justify-between max-w-xs ml-auto text-green-700">
                   <span>Paid</span>
-                  <span className="tabular-nums">−{formatCurrency(invoice.amountPaid.toNumber())}</span>
+                  <span className="tabular-nums">
+                    −{formatCurrency(invoice.amountPaid.toNumber())}
+                  </span>
                 </div>
                 <div className="flex justify-between max-w-xs ml-auto font-semibold">
                   <span>Balance due</span>
-                  <span className="tabular-nums">{formatCurrency(invoice.amountDue.toNumber())}</span>
+                  <span className="tabular-nums">
+                    {formatCurrency(invoice.amountDue.toNumber())}
+                  </span>
                 </div>
               </>
             )}
@@ -197,7 +217,9 @@ export default async function CustomerInvoicePage({
               {invoice.payments.map((pmt, i) => (
                 <div key={i} className="flex items-center justify-between text-sm">
                   <div>
-                    <span className="font-medium">{PAYMENT_METHOD_LABELS[pmt.method] ?? pmt.method}</span>
+                    <span className="font-medium">
+                      {PAYMENT_METHOD_LABELS[pmt.method] ?? pmt.method}
+                    </span>
                     <span className="text-muted-foreground ml-2">{formatDate(pmt.createdAt)}</span>
                   </div>
                   <span className="tabular-nums font-medium text-green-700">
@@ -226,7 +248,10 @@ export default async function CustomerInvoicePage({
               {tenant?.phone && (
                 <>
                   {" Call "}
-                  <a href={`tel:${tenant.phone}`} className="text-primary hover:underline font-medium">
+                  <a
+                    href={`tel:${tenant.phone}`}
+                    className="text-primary hover:underline font-medium"
+                  >
                     {tenant.phone}
                   </a>
                 </>
@@ -234,7 +259,10 @@ export default async function CustomerInvoicePage({
               {tenant?.email && (
                 <>
                   {" or email "}
-                  <a href={`mailto:${tenant.email}`} className="text-primary hover:underline font-medium">
+                  <a
+                    href={`mailto:${tenant.email}`}
+                    className="text-primary hover:underline font-medium"
+                  >
                     {tenant.email}
                   </a>
                 </>

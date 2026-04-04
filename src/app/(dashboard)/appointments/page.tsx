@@ -1,11 +1,15 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react"
+import { Bell, Pencil, Plus, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { requireAuth } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
-import { updateAppointmentStatus, deleteAppointment } from "@/modules/appointments/actions"
+import {
+  updateAppointmentStatus,
+  deleteAppointment,
+  sendAppointmentReminder,
+} from "@/modules/appointments/actions"
 
 export const metadata: Metadata = { title: "Appointments" }
 
@@ -141,6 +145,7 @@ export default async function AppointmentsPage({
               const arrivedWithId = updateAppointmentStatus.bind(null, apt.id, "ARRIVED")
               const noShowWithId = updateAppointmentStatus.bind(null, apt.id, "NO_SHOW")
               const deleteWithId = deleteAppointment.bind(null, apt.id)
+              const reminderWithId = sendAppointmentReminder.bind(null, apt.id)
 
               return (
                 <div key={apt.id} className="px-5 py-4 flex items-start gap-4">
@@ -185,6 +190,28 @@ export default async function AppointmentsPage({
 
                   {/* Actions */}
                   <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Edit */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      render={<Link href={`/appointments/${apt.id}/edit`} />}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    {/* SMS reminder */}
+                    {apt.customerPhone && ["SCHEDULED", "CONFIRMED"].includes(apt.status) && (
+                      <form
+                        action={async () => {
+                          "use server"
+                          await reminderWithId()
+                        }}
+                        title="Send SMS reminder"
+                      >
+                        <Button type="submit" size="sm" variant="ghost">
+                          <Bell className="h-3.5 w-3.5" />
+                        </Button>
+                      </form>
+                    )}
                     {apt.status === "SCHEDULED" && (
                       <form
                         action={async () => {

@@ -10,6 +10,8 @@ import { assertValidTransition } from "./workflow"
 import { generateWorkOrderNumber } from "@/lib/utils/sequence"
 import { calculateTotals, parseLineItemsFromFormData } from "@/modules/estimates/utils"
 import type { WorkOrderStatus } from "@/generated/prisma/enums"
+import { smsProvider } from "@/lib/integrations/sms"
+import { vehicleReadySms } from "@/lib/integrations/sms/templates"
 
 export async function createWorkOrder(formData: FormData) {
   const { tenantId, id: userId, role } = await requireAuth()
@@ -172,6 +174,32 @@ export async function transitionStatus(id: string, formData: FormData) {
       },
     },
   })
+
+  // Auto-send "vehicle ready" SMS when transitioning to READY_FOR_PICKUP
+  if (toStatus === "READY_FOR_PICKUP") {
+    const wo = await prisma.workOrder.findUnique({
+      where: { id },
+      include: {
+        customer: { select: { phone: true, firstName: true, lastName: true } },
+        vehicle: { select: { year: true, make: true, model: true } },
+        tenant: { select: { name: true, phone: true } },
+      },
+    })
+    if (wo?.customer.phone) {
+      const vehicleLabel = [wo.vehicle.year, wo.vehicle.make, wo.vehicle.model]
+        .filter(Boolean)
+        .join(" ")
+      await smsProvider.send({
+        to: wo.customer.phone,
+        body: vehicleReadySms({
+          customerName: `${wo.customer.firstName} ${wo.customer.lastName}`,
+          shopName: wo.tenant.name,
+          shopPhone: wo.tenant.phone,
+          vehicleLabel,
+        }),
+      })
+    }
+  }
 
   revalidatePath(`/work-orders/${id}`)
   revalidatePath("/work-orders")

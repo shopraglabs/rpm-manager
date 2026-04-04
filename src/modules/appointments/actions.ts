@@ -6,6 +6,8 @@ import { z } from "zod"
 import { prisma } from "@/lib/db"
 import { requireAuth } from "@/lib/auth/session"
 import { requirePermission } from "@/lib/auth/permissions"
+import { smsProvider } from "@/lib/integrations/sms"
+import { appointmentReminderSms } from "@/lib/integrations/sms/templates"
 
 const appointmentSchema = z.object({
   customerName: z.string().min(1, "Customer name is required"),
@@ -52,6 +54,42 @@ export async function createAppointment(formData: FormData) {
   redirect(`/appointments?date=${start.toISOString().split("T")[0]}`)
 }
 
+export async function updateAppointment(id: string, formData: FormData) {
+  const { tenantId, role } = await requireAuth()
+  requirePermission(role, "appointments:update")
+
+  const existing = await prisma.appointment.findFirst({ where: { id, tenantId } })
+  if (!existing) return { error: "Appointment not found" }
+
+  const raw = Object.fromEntries(formData)
+  const parsed = appointmentSchema.safeParse(raw)
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" }
+  }
+
+  const start = new Date(parsed.data.startTime)
+  const end = new Date(parsed.data.endTime)
+  if (end <= start) return { error: "End time must be after start time" }
+
+  await prisma.appointment.update({
+    where: { id },
+    data: {
+      customerName: parsed.data.customerName,
+      customerPhone: parsed.data.customerPhone || null,
+      customerEmail: parsed.data.customerEmail || null,
+      title: parsed.data.title,
+      description: parsed.data.description || null,
+      startTime: start,
+      endTime: end,
+      assignedToId: parsed.data.assignedToId || null,
+      vehicleId: parsed.data.vehicleId || null,
+    },
+  })
+
+  revalidatePath("/appointments")
+  redirect(`/appointments?date=${start.toISOString().split("T")[0]}`)
+}
+
 export async function updateAppointmentStatus(
   id: string,
   status: "SCHEDULED" | "CONFIRMED" | "ARRIVED" | "NO_SHOW" | "COMPLETED" | "CANCELLED"
@@ -68,6 +106,44 @@ export async function updateAppointmentStatus(
   })
 
   revalidatePath("/appointments")
+  return { success: true }
+}
+
+export async function sendAppointmentReminder(id: string) {
+  const { tenantId, role } = await requireAuth()
+  requirePermission(role, "appointments:update")
+
+  const apt = await prisma.appointment.findFirst({ where: { id, tenantId } })
+  if (!apt) return { error: "Appointment not found" }
+  if (!apt.customerPhone) return { error: "No phone number on file for this appointment" }
+
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { name: true, phone: true },
+  })
+
+  const date = apt.startTime.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  })
+  const time = apt.startTime.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  })
+
+  const body = appointmentReminderSms({
+    customerName: apt.customerName,
+    shopName: tenant?.name ?? "the shop",
+    shopPhone: tenant?.phone,
+    date,
+    time,
+    serviceTitle: apt.title,
+  })
+
+  const result = await smsProvider.send({ to: apt.customerPhone, body })
+  if (!result.success) return { error: result.error ?? "SMS failed to send" }
+
   return { success: true }
 }
 

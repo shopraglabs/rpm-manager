@@ -64,3 +64,23 @@ export async function deleteCustomer(id: string) {
   revalidatePath("/customers")
   redirect("/customers")
 }
+
+export async function sendCustomerSms(customerId: string, message: string) {
+  const { tenantId, role } = await requireAuth()
+  requirePermission(role, "customers:update")
+
+  if (!message.trim()) return { error: "Message cannot be empty" }
+
+  const customer = await prisma.customer.findFirst({
+    where: { id: customerId, tenantId },
+    select: { phone: true, firstName: true, lastName: true },
+  })
+  if (!customer) return { error: "Customer not found" }
+  if (!customer.phone) return { error: "This customer has no phone number on file" }
+
+  const { smsProvider } = await import("@/lib/integrations/sms")
+  const result = await smsProvider.send({ to: customer.phone, body: message })
+  if (!result.success) return { error: result.error ?? "SMS failed to send" }
+
+  return { success: true }
+}

@@ -24,6 +24,7 @@ export async function getDashboardStats() {
     todayAppointments,
     overdueInvoiceList,
     readyForPickupList,
+    overduePromisedDates,
     upcomingServiceReminders,
   ] = await Promise.all([
     // Open work orders (not delivered or cancelled)
@@ -156,6 +157,24 @@ export async function getDashboardStats() {
       },
     }),
 
+    // Work orders with overdue promised dates
+    prisma.workOrder.findMany({
+      where: {
+        tenantId,
+        promisedDate: { lt: today },
+        status: { notIn: ["COMPLETED", "READY_FOR_PICKUP", "DELIVERED", "CANCELLED"] },
+      },
+      orderBy: { promisedDate: "asc" },
+      take: 5,
+      select: {
+        id: true,
+        orderNumber: true,
+        promisedDate: true,
+        customer: { select: { firstName: true, lastName: true } },
+        vehicle: { select: { year: true, make: true, model: true } },
+      },
+    }),
+
     // Upcoming service reminders (next 30 days, not yet completed or sent)
     prisma.serviceReminder.findMany({
       where: {
@@ -205,6 +224,7 @@ export async function getDashboardStats() {
     todayAppointments,
     overdueInvoiceList,
     readyForPickupList,
+    overduePromisedDates,
     upcomingServiceReminders,
   }
 }

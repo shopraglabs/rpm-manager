@@ -10,6 +10,7 @@ import {
   Package,
   CalendarDays,
   CheckCircle2,
+  Clock,
   Bell,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -65,6 +66,7 @@ const INV_STATUS_LABELS: Record<string, string> = {
 
 export default async function DashboardPage() {
   const [user, stats] = await Promise.all([requireAuth(), getDashboardStats()])
+  const { overduePromisedDates } = stats
 
   const growthPositive = (stats.monthGrowth ?? 0) >= 0
 
@@ -156,6 +158,7 @@ export default async function DashboardPage() {
       {/* Alerts */}
       {(stats.readyForPickupList.length > 0 ||
         stats.overdueInvoiceList.length > 0 ||
+        overduePromisedDates.length > 0 ||
         stats.lowInventory > 0 ||
         stats.todayAppointments > 0) && (
         <div className="space-y-2">
@@ -207,6 +210,32 @@ export default async function DashboardPage() {
                     >
                       {inv.invoiceNumber} · {inv.customer.firstName} {inv.customer.lastName} ·{" "}
                       {formatCurrency(inv.amountDue.toNumber())}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Work orders past promised date */}
+            {overduePromisedDates.length > 0 && (
+              <div className="rounded-xl border border-orange-200 bg-orange-50 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-4 w-4 text-orange-600 shrink-0" />
+                  <p className="text-sm font-medium text-orange-800">
+                    {overduePromisedDates.length} work order
+                    {overduePromisedDates.length !== 1 ? "s" : ""} past promised date
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {overduePromisedDates.map((wo) => (
+                    <Link
+                      key={wo.id}
+                      href={`/work-orders/${wo.id}`}
+                      className="text-xs bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-md px-2 py-1 font-mono transition-colors"
+                    >
+                      {wo.orderNumber} · {wo.customer.firstName} {wo.customer.lastName}
+                      {wo.promisedDate &&
+                        ` · ${formatDate(wo.promisedDate)}`}
                     </Link>
                   ))}
                 </div>

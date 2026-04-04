@@ -232,6 +232,25 @@ export async function markEstimateApproved(id: string) {
   revalidatePath("/estimates")
 }
 
+export async function markEstimateDeclined(id: string) {
+  const { tenantId, role } = await requireAuth()
+  requirePermission(role, "estimates:update")
+
+  const existing = await prisma.estimate.findFirst({ where: { id, tenantId } })
+  if (!existing) return { error: "Estimate not found" }
+  if (!["SENT", "VIEWED", "APPROVED"].includes(existing.status)) {
+    return { error: "Estimate cannot be declined from its current status" }
+  }
+
+  await prisma.estimate.update({
+    where: { id },
+    data: { status: "DECLINED" },
+  })
+
+  revalidatePath(`/estimates/${id}`)
+  revalidatePath("/estimates")
+}
+
 export async function duplicateEstimate(id: string) {
   const { tenantId, id: userId, role } = await requireAuth()
   requirePermission(role, "estimates:create")

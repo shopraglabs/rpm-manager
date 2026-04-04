@@ -4,6 +4,8 @@ import { notFound } from "next/navigation"
 import { ChevronLeft, Pencil, Plus, FileText, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getVehicle } from "@/modules/vehicles/queries"
+import { getVehicleServiceReminders } from "@/modules/service-reminders/queries"
+import { ServiceRemindersPanel } from "@/components/service-reminders/service-reminders-panel"
 import { formatDate, formatCurrency } from "@/lib/utils/format"
 
 export const metadata: Metadata = { title: "Vehicle" }
@@ -21,7 +23,10 @@ export default async function VehicleDetailPage({
   params: Promise<{ vehicleId: string }>
 }) {
   const { vehicleId } = await params
-  const vehicle = await getVehicle(vehicleId)
+  const [vehicle, reminders] = await Promise.all([
+    getVehicle(vehicleId),
+    getVehicleServiceReminders(vehicleId),
+  ])
   if (!vehicle) notFound()
 
   const title = `${vehicle.year ? `${vehicle.year} ` : ""}${vehicle.make} ${vehicle.model}${vehicle.trim ? ` ${vehicle.trim}` : ""}`
@@ -127,6 +132,11 @@ export default async function VehicleDetailPage({
             <p className="text-sm whitespace-pre-wrap">{vehicle.notes}</p>
           </div>
         )}
+      </div>
+
+      {/* Service reminders */}
+      <div className="mt-6">
+        <ServiceRemindersPanel vehicleId={vehicleId} initialReminders={reminders} />
       </div>
 
       {/* Service history */}

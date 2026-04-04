@@ -565,3 +565,87 @@ export function thankYouEmail(data: ThankYouEmailData): { subject: string; html:
 
   return { subject, html: layout(data.shopName, content) }
 }
+
+// ============================================================
+// SERVICE REMINDER
+// ============================================================
+
+export interface ServiceReminderEmailData {
+  shopName: string
+  shopPhone?: string | null
+  shopEmail?: string | null
+  customerFirstName: string
+  vehicleLabel: string
+  services: Array<{ service: string; dueDate?: string | null; dueMileage?: number | null }>
+  scheduleUrl?: string | null
+}
+
+export function serviceReminderEmail(data: ServiceReminderEmailData): {
+  subject: string
+  html: string
+} {
+  const serviceList = data.services
+    .map((s) => {
+      const parts = [s.service]
+      if (s.dueDate) parts.push(`due ${s.dueDate}`)
+      if (s.dueMileage) parts.push(`at ${s.dueMileage.toLocaleString()} mi`)
+      return `<li style="margin-bottom:6px;font-size:14px;">${parts.join(" · ")}</li>`
+    })
+    .join("")
+
+  const subject = `Your ${data.vehicleLabel} is due for service`
+
+  const content = `
+    <h2 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#0f172a;">
+      Time for some maintenance!
+    </h2>
+    <p style="margin:0 0 24px;color:#64748b;font-size:15px;">
+      Hi ${data.customerFirstName}, it looks like your ${data.vehicleLabel} is coming up on some
+      scheduled maintenance. We'd love to help you keep it running smoothly.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0"
+      style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:24px;">
+      <tr>
+        <td style="padding:20px 24px;">
+          <p style="margin:0 0 12px;font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;">
+            Upcoming Services
+          </p>
+          <ul style="margin:0;padding:0 0 0 18px;color:#0f172a;">
+            ${serviceList}
+          </ul>
+        </td>
+      </tr>
+    </table>
+
+    ${
+      data.scheduleUrl
+        ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr>
+        <td align="center">
+          <a href="${data.scheduleUrl}"
+            style="display:inline-block;background:#1d4ed8;color:#fff;font-size:15px;font-weight:600;
+                   padding:14px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.2px;">
+            Schedule Service
+          </a>
+        </td>
+      </tr>
+    </table>`
+        : ""
+    }
+
+    ${
+      data.shopPhone || data.shopEmail
+        ? `<hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
+    <p style="margin:0;font-size:13px;color:#64748b;text-align:center;">
+      Call us to schedule at
+      ${data.shopPhone ? `<a href="tel:${data.shopPhone}" style="color:#1d4ed8;">${data.shopPhone}</a>` : ""}
+      ${data.shopPhone && data.shopEmail ? " · " : ""}
+      ${data.shopEmail ? `<a href="mailto:${data.shopEmail}" style="color:#1d4ed8;">${data.shopEmail}</a>` : ""}
+    </p>`
+        : ""
+    }
+  `
+
+  return { subject, html: layout(data.shopName, content) }
+}

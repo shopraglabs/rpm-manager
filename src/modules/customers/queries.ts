@@ -26,6 +26,15 @@ export async function getCustomers(params: { page?: number; pageSize?: number; s
       take: pageSize,
       include: {
         _count: { select: { vehicles: true } },
+        workOrders: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { createdAt: true },
+        },
+        invoices: {
+          where: { status: { notIn: ["VOID", "PAID"] }, amountDue: { gt: 0 } },
+          select: { amountDue: true },
+        },
       },
     }),
     prisma.customer.count({ where }),

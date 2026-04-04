@@ -180,6 +180,43 @@ export async function transitionStatus(id: string, formData: FormData) {
     },
   })
 
+  // Deduct inventory quantities for PART line items on COMPLETED
+  if (toStatus === "COMPLETED") {
+    try {
+      const partLineItems = await prisma.workOrderLineItem.findMany({
+        where: { workOrderId: id, type: "PART" },
+        select: { partNumber: true, quantity: true },
+      })
+      const partNumbers = partLineItems
+        .map((li) => li.partNumber)
+        .filter((pn): pn is string => !!pn)
+
+      if (partNumbers.length > 0) {
+        const inventoryItems = await prisma.inventoryItem.findMany({
+          where: { tenantId, partNumber: { in: partNumbers }, isActive: true },
+          select: { id: true, partNumber: true },
+        })
+        const invMap = new Map(inventoryItems.map((inv) => [inv.partNumber, inv.id]))
+
+        await Promise.all(
+          partLineItems
+            .filter((li) => li.partNumber && invMap.has(li.partNumber))
+            .map((li) => {
+              const invId = invMap.get(li.partNumber!)!
+              const qty = Math.floor(Number(li.quantity))
+              if (qty <= 0) return Promise.resolve()
+              return prisma.inventoryItem.update({
+                where: { id: invId },
+                data: { quantityOnHand: { decrement: qty } },
+              })
+            })
+        )
+      }
+    } catch (err) {
+      console.error("[transitionStatus] Failed to deduct inventory:", err)
+    }
+  }
+
   // Update the vehicle's current mileage if mileageOut is provided and higher
   if (mileageOutValue !== undefined) {
     const vehicle = await prisma.vehicle.findUnique({

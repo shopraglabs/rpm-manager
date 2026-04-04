@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Reports" }
 
 export default async function ReportsPage() {
   const data = await getReportData(12)
-  const { summary, monthlyRevenue, workOrderVolume, topServices, techStats } = data
+  const { summary, monthlyRevenue, workOrderVolume, topServices, techStats, arAging } = data
 
   return (
     <div className="space-y-6">
@@ -183,6 +183,62 @@ export default async function ReportsPage() {
           )}
         </div>
       </div>
+
+      {/* AR Aging */}
+      {arAging.totalOutstanding > 0 && (
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="px-5 py-4 border-b flex items-center justify-between">
+            <div>
+              <h2 className="font-medium">Accounts Receivable Aging</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Unpaid invoices by age</p>
+            </div>
+            <p className="text-sm font-semibold tabular-nums">
+              {formatCurrency(arAging.totalOutstanding)} total outstanding
+            </p>
+          </div>
+          <div className="divide-y">
+            {arAging.buckets.map((bucket) => {
+              const pct =
+                arAging.totalOutstanding > 0
+                  ? Math.round((bucket.amount / arAging.totalOutstanding) * 100)
+                  : 0
+              const isOverdue = bucket.label !== "Current"
+              return (
+                <div key={bucket.label} className="px-5 py-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-3">
+                      <p
+                        className={`text-sm font-medium w-24 ${isOverdue && bucket.amount > 0 ? "text-destructive" : ""}`}
+                      >
+                        {bucket.label}
+                      </p>
+                      <span className="text-xs text-muted-foreground">
+                        {bucket.count} invoice{bucket.count !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p
+                        className={`text-sm font-medium tabular-nums ${isOverdue && bucket.amount > 0 ? "text-destructive" : ""}`}
+                      >
+                        {formatCurrency(bucket.amount)}
+                      </p>
+                      {pct > 0 && (
+                        <p className="text-xs text-muted-foreground">{pct}%</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${isOverdue && bucket.amount > 0 ? "bg-destructive/60" : "bg-primary/60"}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -25,6 +25,17 @@ export interface TechnicianStat {
   completed: number
 }
 
+export interface ArAgingBucket {
+  label: string
+  count: number
+  amount: number
+}
+
+export interface ArAging {
+  buckets: ArAgingBucket[]
+  totalOutstanding: number
+}
+
 export async function getReportData(months = 12) {
   const { tenantId } = await requireAuth()
 
@@ -32,7 +43,7 @@ export async function getReportData(months = 12) {
   // Start of `months` months ago
   const startDate = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1)
 
-  const [payments, workOrders, lineItems, technicians] = await Promise.all([
+  const [payments, workOrders, lineItems, technicians, unpaidInvoices] = await Promise.all([
     // All payments in range
     prisma.payment.findMany({
       where: { tenantId, createdAt: { gte: startDate } },
@@ -73,6 +84,20 @@ export async function getReportData(months = 12) {
     prisma.user.findMany({
       where: { tenantId, isActive: true, role: { in: ["TECHNICIAN", "MANAGER", "OWNER"] } },
       select: { id: true, firstName: true, lastName: true },
+    }),
+
+    // All unpaid invoices for AR aging
+    prisma.invoice.findMany({
+      where: {
+        tenantId,
+        status: { in: ["SENT", "PARTIALLY_PAID", "OVERDUE"] },
+      },
+      select: {
+        dueDate: true,
+        amountDue: true,
+        customer: { select: { firstName: true, lastName: true } },
+        invoiceNumber: true,
+      },
     }),
   ])
 
@@ -170,6 +195,44 @@ export async function getReportData(months = 12) {
     .filter((t) => t.workOrders > 0)
     .sort((a, b) => b.completed - a.completed)
 
+  // ── AR Aging ──────────────────────────────────────────────────────────────
+  const agingBuckets: ArAgingBucket[] = [
+    { label: "Current", count: 0, amount: 0 },
+    { label: "1–30 days", count: 0, amount: 0 },
+    { label: "31–60 days", count: 0, amount: 0 },
+    { label: "61–90 days", count: 0, amount: 0 },
+    { label: "90+ days", count: 0, amount: 0 },
+  ]
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  for (const inv of unpaidInvoices) {
+    const due = inv.dueDate ? new Date(inv.dueDate) : null
+    const amt = inv.amountDue.toNumber()
+    if (!due || due >= today) {
+      agingBuckets[0].count++
+      agingBuckets[0].amount += amt
+    } else {
+      const daysOverdue = Math.floor((today.getTime() - due.getTime()) / 86400000)
+      if (daysOverdue <= 30) {
+        agingBuckets[1].count++
+        agingBuckets[1].amount += amt
+      } else if (daysOverdue <= 60) {
+        agingBuckets[2].count++
+        agingBuckets[2].amount += amt
+      } else if (daysOverdue <= 90) {
+        agingBuckets[3].count++
+        agingBuckets[3].amount += amt
+      } else {
+        agingBuckets[4].count++
+        agingBuckets[4].amount += amt
+      }
+    }
+  }
+  const arAging: ArAging = {
+    buckets: agingBuckets,
+    totalOutstanding: unpaidInvoices.reduce((s, inv) => s + inv.amountDue.toNumber(), 0),
+  }
+
   // ── Summary KPIs ──────────────────────────────────────────────────────────
   const totalRevenue = payments.reduce((s, p) => s + p.amount.toNumber(), 0)
   const totalWOs = workOrders.length
@@ -184,6 +247,7 @@ export async function getReportData(months = 12) {
     workOrderVolume,
     topServices,
     techStats,
+    arAging,
     summary: {
       totalRevenue,
       totalWOs,

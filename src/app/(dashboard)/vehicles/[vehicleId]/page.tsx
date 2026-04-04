@@ -59,6 +59,17 @@ export default async function VehicleDetailPage({
             Edit
           </Button>
           <Button
+            variant="outline"
+            render={
+              <Link
+                href={`/work-orders/new?vehicleId=${vehicle.id}&customerId=${vehicle.customer.id}`}
+              />
+            }
+          >
+            <Wrench className="h-4 w-4 mr-2" />
+            New Work Order
+          </Button>
+          <Button
             render={
               <Link
                 href={`/estimates/new?vehicleId=${vehicle.id}&customerId=${vehicle.customer.id}`}

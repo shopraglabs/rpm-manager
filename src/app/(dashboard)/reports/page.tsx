@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { TrendingUp, Wrench, DollarSign, CheckCircle2 } from "lucide-react"
 import { getReportData } from "@/modules/reports/queries"
 import { formatCurrency } from "@/lib/utils/format"
@@ -6,15 +7,45 @@ import { RevenueChart, WorkOrderVolumeChart } from "./revenue-chart"
 
 export const metadata: Metadata = { title: "Reports" }
 
-export default async function ReportsPage() {
-  const data = await getReportData(12)
+const PERIOD_OPTIONS = [
+  { label: "3M", months: 3 },
+  { label: "6M", months: 6 },
+  { label: "12M", months: 12 },
+]
+
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ months?: string }>
+}) {
+  const { months: monthsParam } = await searchParams
+  const months = [3, 6, 12].includes(Number(monthsParam)) ? Number(monthsParam) : 12
+
+  const data = await getReportData(months)
   const { summary, monthlyRevenue, workOrderVolume, topServices, techStats, arAging } = data
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
-        <p className="text-muted-foreground text-sm mt-0.5">Last 12 months</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">Last {months} months</p>
+        </div>
+        <div className="flex items-center gap-1 rounded-lg border bg-muted p-1">
+          {PERIOD_OPTIONS.map((opt) => (
+            <Link
+              key={opt.months}
+              href={`/reports?months=${opt.months}`}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                months === opt.months
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {opt.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Summary KPIs */}

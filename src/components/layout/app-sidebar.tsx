@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   Users,
+  Car,
   FileText,
   Wrench,
   ClipboardCheck,
@@ -35,6 +36,7 @@ import type { SessionUser } from "@/lib/auth/session"
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Customers", href: "/customers", icon: Users },
+  { label: "Vehicles", href: "/vehicles", icon: Car },
   { label: "Estimates", href: "/estimates", icon: FileText },
   { label: "Work Orders", href: "/work-orders", icon: Wrench },
   { label: "Inspections", href: "/inspections", icon: ClipboardCheck },

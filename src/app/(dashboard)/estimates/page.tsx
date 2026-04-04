@@ -4,6 +4,7 @@ import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { SearchBar } from "@/components/ui/search-bar"
+import { PaginationNav } from "@/components/ui/pagination-nav"
 import { getEstimates } from "@/modules/estimates/queries"
 import { formatCurrency, formatDate } from "@/lib/utils/format"
 
@@ -119,6 +120,20 @@ export default async function EstimatesPage({
           </table>
         </div>
       )}
+
+      <PaginationNav
+        page={result.page}
+        totalPages={result.totalPages}
+        total={result.total}
+        pageSize={result.pageSize}
+        buildHref={(p) => {
+          const sp = new URLSearchParams()
+          sp.set("page", String(p))
+          if (search) sp.set("search", search)
+          if (status) sp.set("status", status)
+          return `/estimates?${sp.toString()}`
+        }}
+      />
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { Plus, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { SearchBar } from "@/components/ui/search-bar"
+import { PaginationNav } from "@/components/ui/pagination-nav"
 import { requireAuth } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 import { formatCurrency } from "@/lib/utils/format"
@@ -36,22 +37,17 @@ export default async function InventoryPage({
     ...searchWhere,
   }
 
-  const [items, total, lowStockCount] = await Promise.all([
+  const [items, filteredTotal, total, lowStockCount] = await Promise.all([
     prisma.inventoryItem.findMany({
       where: itemsWhere,
       orderBy: { name: "asc" },
       skip: (currentPage - 1) * PAGINATION_PAGE_SIZE,
       take: PAGINATION_PAGE_SIZE,
     }),
+    prisma.inventoryItem.count({ where: itemsWhere }),
+    prisma.inventoryItem.count({ where: { tenantId, isActive: true } }),
     prisma.inventoryItem.count({
-      where: { tenantId, isActive: true },
-    }),
-    prisma.inventoryItem.count({
-      where: {
-        tenantId,
-        isActive: true,
-        quantityOnHand: { lte: 0 },
-      },
+      where: { tenantId, isActive: true, quantityOnHand: { lte: 0 } },
     }),
   ])
 
@@ -152,6 +148,20 @@ export default async function InventoryPage({
           </table>
         </div>
       )}
+
+      <PaginationNav
+        page={currentPage}
+        totalPages={Math.ceil(filteredTotal / PAGINATION_PAGE_SIZE)}
+        total={filteredTotal}
+        pageSize={PAGINATION_PAGE_SIZE}
+        buildHref={(p) => {
+          const sp = new URLSearchParams()
+          sp.set("page", String(p))
+          if (search) sp.set("search", search)
+          if (low) sp.set("low", low)
+          return `/inventory?${sp.toString()}`
+        }}
+      />
     </div>
   )
 }

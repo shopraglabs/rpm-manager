@@ -20,6 +20,10 @@ export async function getDashboardStats() {
     recentWorkOrders,
     recentInvoices,
     overdueInvoices,
+    lowInventory,
+    todayAppointments,
+    overdueInvoiceList,
+    readyForPickupList,
   ] = await Promise.all([
     // Open work orders (not delivered or cancelled)
     prisma.workOrder.count({
@@ -98,6 +102,58 @@ export async function getDashboardStats() {
       },
       _sum: { amountDue: true },
     }),
+
+    // Low inventory items (quantityOnHand <= reorderPoint, where reorderPoint > 0)
+    prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*) as count FROM inventory_items
+      WHERE "tenantId" = ${tenantId}
+        AND "isActive" = true
+        AND "reorderPoint" > 0
+        AND "quantityOnHand" <= "reorderPoint"
+    `.then((rows) => Number(rows[0]?.count ?? 0)),
+
+    // Today's appointments
+    prisma.appointment.count({
+      where: {
+        tenantId,
+        startTime: {
+          gte: startOfToday,
+          lt: new Date(startOfToday.getTime() + 86400000),
+        },
+        status: { notIn: ["CANCELLED", "NO_SHOW"] },
+      },
+    }),
+
+    // Overdue invoice details (up to 5)
+    prisma.invoice.findMany({
+      where: {
+        tenantId,
+        status: { in: ["OVERDUE", "SENT", "PARTIALLY_PAID"] },
+        dueDate: { lt: today },
+      },
+      orderBy: { dueDate: "asc" },
+      take: 5,
+      select: {
+        id: true,
+        invoiceNumber: true,
+        amountDue: true,
+        dueDate: true,
+        customer: { select: { firstName: true, lastName: true } },
+      },
+    }),
+
+    // Ready for pickup WO details (up to 5)
+    prisma.workOrder.findMany({
+      where: { tenantId, status: "READY_FOR_PICKUP" },
+      orderBy: { updatedAt: "asc" },
+      take: 5,
+      select: {
+        id: true,
+        orderNumber: true,
+        customer: { select: { firstName: true, lastName: true } },
+        vehicle: { select: { year: true, make: true, model: true } },
+      },
+    }),
   ])
 
   const revenueToday = todayPayments._sum.amount?.toNumber() ?? 0
@@ -119,5 +175,9 @@ export async function getDashboardStats() {
     monthGrowth,
     recentWorkOrders,
     recentInvoices,
+    lowInventory,
+    todayAppointments,
+    overdueInvoiceList,
+    readyForPickupList,
   }
 }

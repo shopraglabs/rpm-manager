@@ -1,6 +1,16 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Wrench, FileText, TrendingUp, TrendingDown, Car, AlertCircle } from "lucide-react"
+import {
+  Wrench,
+  FileText,
+  TrendingUp,
+  TrendingDown,
+  Car,
+  AlertCircle,
+  Package,
+  CalendarDays,
+  CheckCircle2,
+} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { requireAuth } from "@/lib/auth/session"
 import { getDashboardStats } from "@/modules/dashboard/queries"
@@ -141,6 +151,97 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Alerts */}
+      {(stats.readyForPickupList.length > 0 ||
+        stats.overdueInvoiceList.length > 0 ||
+        stats.lowInventory > 0 ||
+        stats.todayAppointments > 0) && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            Alerts
+          </h2>
+          <div className="space-y-2">
+            {/* Vehicles ready for pickup */}
+            {stats.readyForPickupList.length > 0 && (
+              <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                  <p className="text-sm font-medium text-green-800">
+                    {stats.readyForPickupList.length} vehicle
+                    {stats.readyForPickupList.length !== 1 ? "s" : ""} ready for pickup
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {stats.readyForPickupList.map((wo) => (
+                    <Link
+                      key={wo.id}
+                      href={`/work-orders/${wo.id}`}
+                      className="text-xs bg-green-100 hover:bg-green-200 text-green-800 rounded-md px-2 py-1 font-mono transition-colors"
+                    >
+                      {wo.orderNumber} · {wo.customer.firstName} {wo.customer.lastName}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Overdue invoices */}
+            {stats.overdueInvoiceList.length > 0 && (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+                  <p className="text-sm font-medium text-red-800">
+                    {stats.overdueInvoiceList.length} overdue invoice
+                    {stats.overdueInvoiceList.length !== 1 ? "s" : ""} ·{" "}
+                    {formatCurrency(stats.overdueTotal)} total outstanding
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {stats.overdueInvoiceList.map((inv) => (
+                    <Link
+                      key={inv.id}
+                      href={`/invoices/${inv.id}`}
+                      className="text-xs bg-red-100 hover:bg-red-200 text-red-800 rounded-md px-2 py-1 font-mono transition-colors"
+                    >
+                      {inv.invoiceNumber} · {inv.customer.firstName} {inv.customer.lastName} ·{" "}
+                      {formatCurrency(inv.amountDue.toNumber())}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Low inventory */}
+            {stats.lowInventory > 0 && (
+              <Link
+                href="/inventory?low=1"
+                className="flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4 hover:bg-orange-100 transition-colors"
+              >
+                <Package className="h-4 w-4 text-orange-600 shrink-0" />
+                <p className="text-sm font-medium text-orange-800">
+                  {stats.lowInventory} part
+                  {stats.lowInventory !== 1 ? "s" : ""} at or below reorder point
+                </p>
+              </Link>
+            )}
+
+            {/* Today's appointments */}
+            {stats.todayAppointments > 0 && (
+              <Link
+                href="/appointments"
+                className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 hover:bg-blue-100 transition-colors"
+              >
+                <CalendarDays className="h-4 w-4 text-blue-600 shrink-0" />
+                <p className="text-sm font-medium text-blue-800">
+                  {stats.todayAppointments} appointment
+                  {stats.todayAppointments !== 1 ? "s" : ""} scheduled today
+                </p>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Recent activity — two columns */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -2,6 +2,7 @@
 
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
+import { CommandPalette } from "./command-palette"
 
 export function AppHeader() {
   return (
@@ -9,7 +10,7 @@ export function AppHeader() {
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="h-5" />
       <div className="flex-1" />
-      {/* Search, notifications, etc. will be added here */}
+      <CommandPalette />
     </header>
   )
 }

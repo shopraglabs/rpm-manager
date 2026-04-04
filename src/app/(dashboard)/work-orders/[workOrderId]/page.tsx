@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Pencil, FileText, ClipboardList } from "lucide-react"
+import { ChevronLeft, Pencil, Printer, FileText, ClipboardList } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { StatusTransition, STATUS_LABELS } from "@/components/work-orders/status-transition"
@@ -77,6 +77,14 @@ export default async function WorkOrderDetailPage({
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href={`/work-orders/${workOrderId}/print`} target="_blank" />}
+          >
+            <Printer className="h-4 w-4 mr-2" />
+            Print RO
+          </Button>
           {canInvoice && (
             <Button
               variant="outline"

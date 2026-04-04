@@ -231,6 +231,11 @@ export default async function WorkOrderPrintPage({
                 Mileage in: {wo.mileageIn.toLocaleString()}
               </p>
             )}
+            {wo.mileageOut != null && (
+              <p style={{ color: "#64748b", margin: "2px 0", fontSize: "11px" }}>
+                Mileage out: {wo.mileageOut.toLocaleString()}
+              </p>
+            )}
           </div>
         </div>
 

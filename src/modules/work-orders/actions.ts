@@ -153,7 +153,7 @@ export async function transitionStatus(id: string, formData: FormData) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" }
   }
 
-  const { toStatus, note } = parsed.data
+  const { toStatus, note, mileageOut } = parsed.data
   assertValidTransition(existing.status, toStatus as WorkOrderStatus)
 
   const now = new Date()
@@ -161,11 +161,14 @@ export async function transitionStatus(id: string, formData: FormData) {
   if (toStatus === "IN_PROGRESS" && !existing.startedAt) statusUpdates.startedAt = now
   if (toStatus === "COMPLETED") statusUpdates.completedAt = now
 
+  const mileageOutValue = typeof mileageOut === "number" ? mileageOut : undefined
+
   await prisma.workOrder.update({
     where: { id },
     data: {
       status: toStatus as WorkOrderStatus,
       ...statusUpdates,
+      ...(mileageOutValue !== undefined ? { mileageOut: mileageOutValue } : {}),
       statusHistory: {
         create: {
           fromStatus: existing.status,
@@ -176,6 +179,20 @@ export async function transitionStatus(id: string, formData: FormData) {
       },
     },
   })
+
+  // Update the vehicle's current mileage if mileageOut is provided and higher
+  if (mileageOutValue !== undefined) {
+    const vehicle = await prisma.vehicle.findUnique({
+      where: { id: existing.vehicleId },
+      select: { id: true, mileage: true },
+    })
+    if (vehicle && (vehicle.mileage == null || mileageOutValue > vehicle.mileage)) {
+      await prisma.vehicle.update({
+        where: { id: vehicle.id },
+        data: { mileage: mileageOutValue },
+      })
+    }
+  }
 
   // Auto-send "vehicle ready" SMS when transitioning to READY_FOR_PICKUP
   if (toStatus === "READY_FOR_PICKUP") {

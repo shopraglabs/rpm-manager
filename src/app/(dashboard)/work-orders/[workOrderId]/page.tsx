@@ -143,6 +143,12 @@ export default async function WorkOrderDetailPage({
               </p>
             </div>
             <div>
+              <p className="text-muted-foreground">Mileage out</p>
+              <p className="font-medium mt-0.5">
+                {wo.mileageOut != null ? wo.mileageOut.toLocaleString() : "—"}
+              </p>
+            </div>
+            <div>
               <p className="text-muted-foreground">Promised date</p>
               <p className="font-medium mt-0.5">
                 {wo.promisedDate ? formatDate(wo.promisedDate) : "—"}

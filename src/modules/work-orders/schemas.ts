@@ -26,6 +26,7 @@ export const statusTransitionSchema = z.object({
     "CANCELLED",
   ]),
   note: z.string().optional().or(z.literal("")),
+  mileageOut: z.coerce.number().int().min(0).optional().or(z.literal("")),
 })
 
 export type WorkOrderInput = z.infer<typeof workOrderSchema>

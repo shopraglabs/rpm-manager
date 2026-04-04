@@ -81,6 +81,24 @@ export function StatusTransition({
           </SelectContent>
         </Select>
 
+        {/* Mileage out — shown when completing or delivering */}
+        {(selected === "COMPLETED" || selected === "DELIVERED") && (
+          <div className="flex items-center gap-2">
+            <label htmlFor="mileageOut" className="text-sm text-muted-foreground whitespace-nowrap">
+              Mileage out
+            </label>
+            <input
+              id="mileageOut"
+              name="mileageOut"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="Enter mileage…"
+              className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            />
+          </div>
+        )}
+
         <Textarea
           name="note"
           placeholder="Add a note about this status change (optional)…"

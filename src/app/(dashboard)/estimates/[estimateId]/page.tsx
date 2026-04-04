@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Copy, ExternalLink, Pencil, Printer, Send, Wrench } from "lucide-react"
+import { CheckCircle2, ChevronLeft, Copy, ExternalLink, Pencil, Printer, Send, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getEstimate } from "@/modules/estimates/queries"
-import { sendEstimate, duplicateEstimate } from "@/modules/estimates/actions"
+import { sendEstimate, duplicateEstimate, markEstimateApproved } from "@/modules/estimates/actions"
 import { formatCurrency, formatDate } from "@/lib/utils/format"
 
 export const metadata: Metadata = { title: "Estimate" }
@@ -53,6 +53,8 @@ export default async function EstimateDetailPage({
 
   const sendWithId = sendEstimate.bind(null, estimateId)
   const duplicateWithId = duplicateEstimate.bind(null, estimateId)
+  const approveWithId = markEstimateApproved.bind(null, estimateId)
+  const canApprove = ["SENT", "VIEWED", "DECLINED"].includes(estimate.status)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   const portalUrl = estimate.shareToken
     ? `${appUrl}/customer-portal/estimates/${estimate.shareToken}`
@@ -119,6 +121,14 @@ export default async function EstimateDetailPage({
               <Button type="submit" variant="outline">
                 <Send className="h-4 w-4 mr-2" />
                 Send to Customer
+              </Button>
+            </form>
+          )}
+          {canApprove && (
+            <form action={async () => { await approveWithId() }}>
+              <Button type="submit" variant="outline">
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Mark Approved
               </Button>
             </form>
           )}

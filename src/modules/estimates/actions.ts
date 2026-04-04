@@ -213,6 +213,25 @@ export async function sendEstimate(id: string) {
   return { shareToken }
 }
 
+export async function markEstimateApproved(id: string) {
+  const { tenantId, role } = await requireAuth()
+  requirePermission(role, "estimates:update")
+
+  const existing = await prisma.estimate.findFirst({ where: { id, tenantId } })
+  if (!existing) return { error: "Estimate not found" }
+  if (!["SENT", "VIEWED", "DECLINED"].includes(existing.status)) {
+    return { error: "Estimate cannot be approved from its current status" }
+  }
+
+  await prisma.estimate.update({
+    where: { id },
+    data: { status: "APPROVED", approvedAt: new Date() },
+  })
+
+  revalidatePath(`/estimates/${id}`)
+  revalidatePath("/estimates")
+}
+
 export async function duplicateEstimate(id: string) {
   const { tenantId, id: userId, role } = await requireAuth()
   requirePermission(role, "estimates:create")

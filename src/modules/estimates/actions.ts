@@ -209,6 +209,63 @@ export async function sendEstimate(id: string) {
   return { shareToken }
 }
 
+export async function duplicateEstimate(id: string) {
+  const { tenantId, id: userId, role } = await requireAuth()
+  requirePermission(role, "estimates:create")
+
+  const source = await prisma.estimate.findFirst({
+    where: { id, tenantId },
+    include: { lineItems: { orderBy: { sortOrder: "asc" } } },
+  })
+  if (!source) return { error: "Estimate not found" }
+
+  const estimateNumber = await generateEstimateNumber(tenantId)
+
+  const newEstimate = await prisma.estimate.create({
+    data: {
+      tenantId,
+      estimateNumber,
+      customerId: source.customerId,
+      vehicleId: source.vehicleId,
+      createdById: userId,
+      notes: source.notes ?? undefined,
+      internalNotes: undefined,
+      subtotal: source.subtotal,
+      taxAmount: source.taxAmount,
+      total: source.total,
+      lineItems: {
+        create: source.lineItems.map((item) => ({
+          type: item.type,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          total: item.total,
+          laborHours: item.laborHours ?? undefined,
+          partNumber: item.partNumber ?? undefined,
+          sortOrder: item.sortOrder,
+        })),
+      },
+    },
+  })
+
+  await prisma.estimateVersion.create({
+    data: {
+      estimateId: newEstimate.id,
+      version: 1,
+      snapshot: {
+        lineItems: source.lineItems,
+        subtotal: source.subtotal,
+        taxAmount: source.taxAmount,
+        total: source.total,
+        notes: source.notes,
+      },
+    },
+  })
+
+  revalidatePath("/estimates")
+  redirect(`/estimates/${newEstimate.id}`)
+}
+
 /** Called from the customer portal (public, no auth) */
 export async function respondToEstimate(token: string, response: "APPROVED" | "DECLINED") {
   const estimate = await prisma.estimate.findUnique({ where: { shareToken: token } })

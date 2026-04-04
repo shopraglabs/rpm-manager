@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Pencil, Printer, Send, Wrench } from "lucide-react"
+import { ChevronLeft, Copy, Pencil, Printer, Send, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getEstimate } from "@/modules/estimates/queries"
-import { sendEstimate } from "@/modules/estimates/actions"
+import { sendEstimate, duplicateEstimate } from "@/modules/estimates/actions"
 import { formatCurrency, formatDate } from "@/lib/utils/format"
 
 export const metadata: Metadata = { title: "Estimate" }
@@ -52,6 +52,7 @@ export default async function EstimateDetailPage({
   const canConvert = estimate.status === "APPROVED" && !estimate.workOrder
 
   const sendWithId = sendEstimate.bind(null, estimateId)
+  const duplicateWithId = duplicateEstimate.bind(null, estimateId)
 
   return (
     <div className="max-w-4xl">
@@ -81,6 +82,12 @@ export default async function EstimateDetailPage({
           </p>
         </div>
         <div className="flex gap-2">
+          <form action={async () => { await duplicateWithId() }}>
+            <Button type="submit" variant="outline" size="sm">
+              <Copy className="h-4 w-4 mr-2" />
+              Duplicate
+            </Button>
+          </form>
           <Button
             variant="outline"
             size="sm"

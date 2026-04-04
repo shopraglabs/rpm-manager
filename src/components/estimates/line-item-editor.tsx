@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { Plus, Trash2, GripVertical, ChevronDown } from "lucide-react"
+import { useState, useCallback, useRef } from "react"
+import { Plus, Trash2, GripVertical, ChevronDown, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { formatCurrency } from "@/lib/utils/format"
+import type { InventorySearchResult } from "@/app/api/inventory/search/route"
 
 type CannedJobOption = {
   id: string
@@ -79,6 +80,10 @@ type Props = {
 
 export function LineItemEditor({ defaultItems, taxRate = 0, cannedJobs = [] }: Props) {
   const [showCannedMenu, setShowCannedMenu] = useState(false)
+  const [invSearch, setInvSearch] = useState<{ itemId: string; query: string } | null>(null)
+  const [invResults, setInvResults] = useState<InventorySearchResult[]>([])
+  const invDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const [items, setItems] = useState<LineItem[]>(() => {
     if (defaultItems && defaultItems.length > 0) {
       return defaultItems.map((item, idx) => ({
@@ -123,6 +128,50 @@ export function LineItemEditor({ defaultItems, taxRate = 0, cannedJobs = [] }: P
     ])
     setShowCannedMenu(false)
   }, [])
+
+  const openInvSearch = useCallback((itemId: string) => {
+    setInvSearch({ itemId, query: "" })
+    setInvResults([])
+  }, [])
+
+  const searchInventory = useCallback((itemId: string, q: string) => {
+    setInvSearch({ itemId, query: q })
+    if (invDebounceRef.current) clearTimeout(invDebounceRef.current)
+    if (q.length < 1) {
+      setInvResults([])
+      return
+    }
+    invDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/inventory/search?q=${encodeURIComponent(q)}`)
+        const data = (await res.json()) as { results: InventorySearchResult[] }
+        setInvResults(data.results)
+      } catch {
+        setInvResults([])
+      }
+    }, 200)
+  }, [])
+
+  const fillFromInventory = useCallback(
+    (item: InventorySearchResult) => {
+      if (!invSearch) return
+      setItems((prev) =>
+        prev.map((li) =>
+          li.id === invSearch.itemId
+            ? {
+                ...li,
+                description: item.name,
+                partNumber: item.partNumber,
+                unitPrice: String(item.price),
+              }
+            : li
+        )
+      )
+      setInvSearch(null)
+      setInvResults([])
+    },
+    [invSearch]
+  )
 
   const subtotal = items.reduce((sum, item) => sum + lineTotal(item), 0)
   const clampedSubtotal = Math.max(0, subtotal)
@@ -260,13 +309,73 @@ export function LineItemEditor({ defaultItems, taxRate = 0, cannedJobs = [] }: P
                     <label className="text-xs text-muted-foreground whitespace-nowrap">
                       Part #
                     </label>
-                    <Input
-                      name={`lineItems[${idx}][partNumber]`}
-                      value={item.partNumber}
-                      onChange={(e) => updateItem(item.id, "partNumber", e.target.value)}
-                      placeholder="SKU-123"
-                      className="h-7 text-xs"
-                    />
+                    <div className="relative flex-1 flex gap-1">
+                      <Input
+                        name={`lineItems[${idx}][partNumber]`}
+                        value={item.partNumber}
+                        onChange={(e) => updateItem(item.id, "partNumber", e.target.value)}
+                        placeholder="SKU-123"
+                        className="h-7 text-xs"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
+                        title="Search inventory"
+                        onClick={() => openInvSearch(item.id)}
+                      >
+                        <Package className="h-3.5 w-3.5" />
+                      </Button>
+                      {/* Inventory search popup */}
+                      {invSearch?.itemId === item.id && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => setInvSearch(null)} />
+                          <div className="absolute left-0 top-full mt-1 z-20 w-72 rounded-lg border bg-popover shadow-md">
+                            <div className="p-2 border-b">
+                              <Input
+                                autoFocus
+                                value={invSearch.query}
+                                onChange={(e) => searchInventory(item.id, e.target.value)}
+                                placeholder="Search parts…"
+                                className="h-7 text-xs"
+                              />
+                            </div>
+                            {invResults.length > 0 ? (
+                              <ul className="max-h-48 overflow-y-auto py-1">
+                                {invResults.map((part) => (
+                                  <li key={part.id}>
+                                    <button
+                                      type="button"
+                                      className="w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors"
+                                      onClick={() => fillFromInventory(part)}
+                                    >
+                                      <p className="font-medium">{part.name}</p>
+                                      <p className="text-muted-foreground">
+                                        {part.partNumber} · {formatCurrency(part.price)}
+                                        {part.quantityOnHand <= 0 && (
+                                          <span className="ml-1 text-destructive">
+                                            (out of stock)
+                                          </span>
+                                        )}
+                                      </p>
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : invSearch.query.length >= 1 ? (
+                              <p className="px-3 py-4 text-xs text-muted-foreground text-center">
+                                No parts found
+                              </p>
+                            ) : (
+                              <p className="px-3 py-4 text-xs text-muted-foreground text-center">
+                                Start typing to search inventory
+                              </p>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

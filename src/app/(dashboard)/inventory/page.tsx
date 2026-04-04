@@ -32,11 +32,29 @@ export default async function InventoryPage({
       }
     : {}
 
-  const itemsWhere = {
+  const baseWhere = {
     tenantId,
     isActive: true,
-    ...(low === "1" && { quantityOnHand: { lte: 5 } }),
     ...searchWhere,
+  }
+
+  // For low-stock we need a column-vs-column comparison — use raw SQL to get IDs
+  let lowStockIds: string[] | undefined
+  if (low === "1") {
+    const rows = await prisma.$queryRaw<{ id: string }[]>`
+      SELECT id FROM inventory_items
+      WHERE "tenantId" = ${tenantId}
+        AND "isActive" = true
+        AND "reorderPoint" > 0
+        AND "quantityOnHand" <= "reorderPoint"
+      ORDER BY name ASC
+    `
+    lowStockIds = rows.map((r) => r.id)
+  }
+
+  const itemsWhere = {
+    ...baseWhere,
+    ...(lowStockIds !== undefined ? { id: { in: lowStockIds } } : {}),
   }
 
   const [items, filteredTotal, total, lowStockCount] = await Promise.all([
@@ -48,9 +66,14 @@ export default async function InventoryPage({
     }),
     prisma.inventoryItem.count({ where: itemsWhere }),
     prisma.inventoryItem.count({ where: { tenantId, isActive: true } }),
-    prisma.inventoryItem.count({
-      where: { tenantId, isActive: true, quantityOnHand: { lte: 0 } },
-    }),
+    // Count items at or below reorder point (same raw query pattern)
+    prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*) as count FROM inventory_items
+      WHERE "tenantId" = ${tenantId}
+        AND "isActive" = true
+        AND "reorderPoint" > 0
+        AND "quantityOnHand" <= "reorderPoint"
+    `.then((rows) => Number(rows[0]?.count ?? 0)),
   ])
 
   return (

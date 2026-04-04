@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { Ban, ChevronLeft, Printer, Send } from "lucide-react"
+import { Ban, ChevronLeft, ExternalLink, Printer, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { RecordPaymentForm } from "@/components/invoices/record-payment-form"
@@ -64,6 +64,10 @@ export default async function InvoiceDetailPage({
 
   const sendWithId = sendInvoice.bind(null, invoiceId)
   const voidWithId = voidInvoice.bind(null, invoiceId)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  const portalUrl = invoice.shareToken
+    ? `${appUrl}/customer-portal/invoices/${invoice.shareToken}`
+    : null
 
   return (
     <div className="max-w-4xl">
@@ -111,6 +115,16 @@ export default async function InvoiceDetailPage({
             <Printer className="h-4 w-4 mr-2" />
             Print
           </Button>
+          {portalUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href={portalUrl} target="_blank" />}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              View Portal
+            </Button>
+          )}
           {canSend && (
             <form
               action={async () => {

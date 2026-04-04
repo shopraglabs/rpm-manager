@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Copy, Pencil, Printer, Send, Wrench } from "lucide-react"
+import { ChevronLeft, Copy, ExternalLink, Pencil, Printer, Send, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getEstimate } from "@/modules/estimates/queries"
@@ -53,6 +53,10 @@ export default async function EstimateDetailPage({
 
   const sendWithId = sendEstimate.bind(null, estimateId)
   const duplicateWithId = duplicateEstimate.bind(null, estimateId)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  const portalUrl = estimate.shareToken
+    ? `${appUrl}/customer-portal/estimates/${estimate.shareToken}`
+    : null
 
   return (
     <div className="max-w-4xl">
@@ -96,6 +100,16 @@ export default async function EstimateDetailPage({
             <Printer className="h-4 w-4 mr-2" />
             Print
           </Button>
+          {portalUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href={portalUrl} target="_blank" />}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              View Portal
+            </Button>
+          )}
           {canSend && (
             <form
               action={async () => {

@@ -114,7 +114,10 @@ export default async function InvoicesPage({
                   Balance
                 </th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
-                  Date
+                  Due Date
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden xl:table-cell">
+                  Created
                 </th>
               </tr>
             </thead>
@@ -146,7 +149,30 @@ export default async function InvoicesPage({
                       <span className="text-muted-foreground">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    {inv.dueDate ? (
+                      (() => {
+                        const today = new Date()
+                        today.setHours(0, 0, 0, 0)
+                        const due = new Date(inv.dueDate)
+                        due.setHours(0, 0, 0, 0)
+                        const isOverdue =
+                          due < today &&
+                          !["PAID", "VOID"].includes(inv.status) &&
+                          inv.amountDue.toNumber() > 0
+                        return (
+                          <span
+                            className={`text-sm ${isOverdue ? "text-destructive font-medium" : "text-muted-foreground"}`}
+                          >
+                            {formatDate(inv.dueDate)}
+                          </span>
+                        )
+                      })()
+                    ) : (
+                      <span className="text-muted-foreground text-sm">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground hidden xl:table-cell">
                     {formatDate(inv.createdAt)}
                   </td>
                 </tr>

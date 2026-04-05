@@ -321,6 +321,52 @@ export default async function EstimateDetailPage({
             </code>
           </div>
         )}
+
+        {/* Version history */}
+        {estimate.versions.length > 1 && (
+          <details className="rounded-xl border bg-card overflow-hidden">
+            <summary className="px-5 py-4 text-sm font-medium cursor-pointer hover:bg-muted/30 transition-colors list-none flex items-center justify-between">
+              <span>Revision History</span>
+              <span className="text-xs text-muted-foreground">
+                {estimate.versions.length} revision{estimate.versions.length !== 1 ? "s" : ""}
+              </span>
+            </summary>
+            <div className="divide-y border-t">
+              {estimate.versions.map((v) => {
+                type SnapshotItem = { description: string; quantity: number; unitPrice: number; type: string }
+                type Snapshot = { lineItems?: SnapshotItem[]; subtotal?: number; taxAmount?: number; total?: number }
+                const snap = v.snapshot as Snapshot
+                return (
+                  <div key={v.id} className="px-5 py-3 text-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-xs">Revision {v.version}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(v.createdAt)}
+                      </span>
+                    </div>
+                    {snap.lineItems && snap.lineItems.length > 0 && (
+                      <div className="space-y-1">
+                        {snap.lineItems.map((item, i) => (
+                          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span className="truncate mr-4">{item.description || "—"}</span>
+                            <span className="shrink-0 tabular-nums">
+                              {item.quantity} × {formatCurrency(item.unitPrice)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {snap.total != null && (
+                      <p className="text-xs font-medium mt-2 pt-2 border-t">
+                        Total: {formatCurrency(snap.total)}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </details>
+        )}
       </div>
     </div>
   )

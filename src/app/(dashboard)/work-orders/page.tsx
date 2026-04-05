@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { SearchBar } from "@/components/ui/search-bar"
 import { PaginationNav } from "@/components/ui/pagination-nav"
 import { getWorkOrders, getBoardWorkOrders } from "@/modules/work-orders/queries"
-import { formatDate } from "@/lib/utils/format"
+import { formatDate, formatCurrency } from "@/lib/utils/format"
 
 export const metadata: Metadata = { title: "Work Orders" }
 
@@ -287,7 +287,10 @@ export default async function WorkOrdersPage({
                   Assigned
                 </th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
-                  Date
+                  Promise
+                </th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground hidden xl:table-cell">
+                  Total
                 </th>
               </tr>
             </thead>
@@ -325,8 +328,41 @@ export default async function WorkOrdersPage({
                   <td className="px-4 py-3 text-muted-foreground text-xs hidden lg:table-cell">
                     {wo.assignedTo ? `${wo.assignedTo.firstName} ${wo.assignedTo.lastName}` : "—"}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
-                    {formatDate(wo.createdAt)}
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    {wo.promisedDate ? (
+                      (() => {
+                        const today = new Date()
+                        today.setHours(0, 0, 0, 0)
+                        const promised = new Date(wo.promisedDate)
+                        promised.setHours(0, 0, 0, 0)
+                        const isOverdue =
+                          promised < today &&
+                          !["DELIVERED", "COMPLETED", "READY_FOR_PICKUP"].includes(wo.status)
+                        return (
+                          <span
+                            className={`text-sm ${isOverdue ? "text-destructive font-medium" : "text-muted-foreground"}`}
+                          >
+                            {formatDate(wo.promisedDate)}
+                          </span>
+                        )
+                      })()
+                    ) : (
+                      <span className="text-muted-foreground text-sm">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right hidden xl:table-cell">
+                    {wo.total.toNumber() > 0 ? (
+                      <span className="text-sm font-medium tabular-nums">
+                        {formatCurrency(wo.total.toNumber())}
+                        {!wo.invoice && (
+                          <span className="block text-[10px] text-muted-foreground font-normal">
+                            no invoice
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">—</span>
+                    )}
                   </td>
                 </tr>
               ))}

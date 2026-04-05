@@ -46,6 +46,7 @@ export async function getWorkOrders(params: {
         assignedTo: {
           select: { id: true, firstName: true, lastName: true },
         },
+        invoice: { select: { id: true } },
       },
     }),
     prisma.workOrder.count({ where }),

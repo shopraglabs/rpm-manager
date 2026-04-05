@@ -59,6 +59,10 @@ export async function getEstimate(id: string) {
       lineItems: { orderBy: { sortOrder: "asc" } },
       workOrder: { select: { id: true } },
       createdBy: { select: { id: true, firstName: true, lastName: true } },
+      versions: {
+        orderBy: { version: "desc" },
+        select: { id: true, version: true, createdAt: true, snapshot: true },
+      },
     },
   })
 }
